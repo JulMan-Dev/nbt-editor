@@ -62,6 +62,82 @@
 
 @end
 
+@implementation NBTBinarySerializer {
+    NSMutableData * _Nonnull data;
+}
+
++ (instancetype)allocWithZone:(struct _NSZone *)zone
+{
+    id value = malloc(class_getInstanceSize(self));
+    
+    if (!value)
+    {
+        @throw [NSException exceptionWithName:NSMallocException
+                                       reason:nil
+                                     userInfo:nil];
+    }
+    
+    *(Class *)value = self;
+    return value;
+}
+
++ (instancetype)newWith:(NSData *)data
+{
+    return [[self alloc] initWith:data];
+}
+
++ (instancetype)newWithMutable:(NSMutableData *)data
+{
+    return [[self alloc] initWithMutable:data];
+}
+
+- (instancetype)initWith:(NSData *)d
+{
+    self->data = [[NSMutableData alloc] initWithData:d];
+    return self;
+}
+
+- (instancetype)initWithMutable:(NSMutableData *)d
+{
+    self->data = [d mutableCopy];
+    return self;
+}
+
+- (void)dealloc
+{
+    free(self);
+    return;
+    [super dealloc];
+}
+
+- (NSData *)data
+{
+    return [NSData dataWithData:self->data];
+}
+
+- (NSMutableData *)mutableData
+{
+    return self->data;
+}
+
+- (id)copyWithZone:(NSZone *)zone
+{
+    // Immutable copy
+    NBTBinarySerializer * copy = [NBTBinarySerializer allocWithZone:zone];
+    copy->data = [self->data mutableCopy];
+    return copy;
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone
+{
+    // Mutable copy
+    NBTBinarySerializer * copy = [NBTBinarySerializer allocWithZone:zone];
+    copy->data = [self->data mutableCopy];
+    return copy;
+}
+
+@end
+
 #pragma clang diagnostic pop
 
 #define __IMPL_TEST(name, class1) - (BOOL)name { return [self isKindOfClass:[class1 class]]; }

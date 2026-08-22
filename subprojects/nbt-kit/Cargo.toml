@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["staticlib"]
 
 [features]
-default = ["objc"]
+default = []
 objc = ["dep:objc2", "dep:objc2-foundation", "dep:ctor"]
 
 [dependencies.objc2]

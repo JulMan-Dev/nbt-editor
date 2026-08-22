@@ -1,5 +1,5 @@
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
-use crate::parser::*;
+use crate::traits::*;
 use alloc::borrow::ToOwned;
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;

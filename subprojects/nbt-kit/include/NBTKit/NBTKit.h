@@ -35,7 +35,37 @@
 
 @end
 
+@interface NBTBinarySerializer : NSObject <NSCopying, NSMutableCopying>
+
+// note that NSCopying and NSMutableCopying share the same implementation as the type
+// is inherently mutable.
+
++ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
++ (nonnull instancetype)newWith:(nonnull NSData *)data;
++ (nonnull instancetype)newWithMutable:(nonnull NSMutableData *)data;
+
+- (nonnull instancetype)initWith:(nonnull NSData *)data;
+- (nonnull instancetype)initWithMutable:(nonnull NSMutableData *)data;
+- (nonnull NSData *)data;
+- (nonnull NSMutableData *)mutableData;
+- (void)writeByte:(nonnull NBTByte *)value;
+- (void)writeShort:(nonnull NBTShort *)value;
+- (void)writeInt:(nonnull NBTInt *)value;
+- (void)writeLong:(nonnull NBTLong *)value;
+- (void)writeFloat:(nonnull NBTFloat *)value;
+- (void)writeDouble:(nonnull NBTDouble *)value;
+- (void)writeByteArray:(nonnull NBTByteArray *)value;
+- (void)writeString:(nonnull NBTString *)value;
+- (void)writeList:(nonnull NBTList *)value;
+- (void)writeCompound:(nonnull NBTCompound *)value;
+- (void)writeIntArray:(nonnull NBTIntArray *)value;
+- (void)writeLongArray:(nonnull NBTLongArray *)value;
+- (void)writeTag:(nonnull NBTBaseTag *)value;
+
+@end
+
 @protocol NBTTag <NSObject, NSCopying, NSMutableCopying>
+
 - (BOOL)isByte;
 - (BOOL)isShort;
 - (BOOL)isInt;
@@ -48,9 +78,11 @@
 - (BOOL)isCompound;
 - (BOOL)isIntArray;
 - (BOOL)isLongArray;
+
 @end
 
 @interface NBTBaseTag : NSObject <NBTTag>
+
 - (BOOL)isByte;
 - (BOOL)isShort;
 - (BOOL)isInt;
@@ -63,6 +95,7 @@
 - (BOOL)isCompound;
 - (BOOL)isIntArray;
 - (BOOL)isLongArray;
+
 @end
 
 //#region NBT Byte
@@ -351,3 +384,5 @@
 @end
 
 //#endregion
+
+
