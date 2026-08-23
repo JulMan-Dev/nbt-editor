@@ -19,19 +19,19 @@
 - (void)dealloc;
 - (nonnull NSData *)data;
 - (uintptr_t)start;
-- (nullable NBTByte *)takeByte;
-- (nullable NBTShort *)takeShort;
-- (nullable NBTInt *)takeInt;
-- (nullable NBTLong *)takeLong;
-- (nullable NBTFloat *)takeFloat;
-- (nullable NBTDouble *)takeDouble;
-- (nullable NBTByteArray *)takeByteArray;
-- (nullable NBTString *)takeString;
-- (nullable NBTList *)takeList;
-- (nullable NBTCompound *)takeCompound;
-- (nullable NBTIntArray *)takeIntArray;
-- (nullable NBTLongArray *)takeLongArray;
-- (nullable NBTBaseTag *)takeTag;
+- (nullable NBTByte *)takeByte:(BOOL)root;
+- (nullable NBTShort *)takeShort:(BOOL)root;
+- (nullable NBTInt *)takeInt:(BOOL)root;
+- (nullable NBTLong *)takeLong:(BOOL)root;
+- (nullable NBTFloat *)takeFloat:(BOOL)root;
+- (nullable NBTDouble *)takeDouble:(BOOL)root;
+- (nullable NBTByteArray *)takeByteArray:(BOOL)root;
+- (nullable NBTString *)takeString:(BOOL)root;
+- (nullable NBTList *)takeList:(BOOL)root;
+- (nullable NBTCompound *)takeCompound:(BOOL)root;
+- (nullable NBTIntArray *)takeIntArray:(BOOL)root;
+- (nullable NBTLongArray *)takeLongArray:(BOOL)root;
+- (nullable NBTBaseTag *)takeTag:(BOOL)root;
 
 @end
 

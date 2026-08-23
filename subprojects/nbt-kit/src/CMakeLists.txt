@@ -1,3 +1,5 @@
+add_subdirectory(bin)
+
 target_sources(rust_sources INTERFACE
         lib.rs
         binary.rs

@@ -40,3 +40,6 @@ target_link_libraries(NBTKit PRIVATE
         nbt_kit
         "$<LINK_LIBRARY:FRAMEWORK,Foundation>"
 )
+target_link_options(NBTKit PRIVATE
+        "-Wl,-force_load,${GENERATED_LIB}"
+)

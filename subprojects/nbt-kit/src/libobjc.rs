@@ -8,6 +8,7 @@ use alloc::collections::BTreeMap;
 use alloc::string::String;
 use core::slice::from_raw_parts;
 use core::{mem, ptr};
+use std::ffi::c_void;
 use objc2::ffi::class_addMethod;
 use objc2::rc::Retained;
 use objc2::runtime::{AnyClass, AnyObject, Sel};
@@ -262,7 +263,7 @@ fn objc_compound(compound: Compound) -> Retained<AnyObject> {
     let (keys, values): (Vec<_>, Vec<_>) = compound
         .into_inner()
         .into_iter()
-        .map(|(k, v)| (objc_string(&k).downcast::<NSString>().ok().unwrap(), objc_tag(v)))
+        .map(|(k, v)| (NSString::from_str(&k), objc_tag(v)))
         .unzip();
 
     // SAFETY: Retained<T> and &T share the same layout. Retained<T> cannot be null and
@@ -347,7 +348,7 @@ unsafe fn rust_long_array(v: &Retained<AnyObject>) -> LongArray {
     }
 }
 
-#[ctor::ctor(unsafe)] static OBJC_NBT_PARSER: &'static AnyClass = class!(NBTParser);
+#[ctor::ctor(unsafe)] static OBJC_NBT_PARSER: &'static AnyClass = class!(NBTBinaryParser);
 
 #[ctor::ctor(unsafe)] static OBJC_NBT_SERIALIZER: &'static AnyClass = class!(NBTBinarySerializer);
 
@@ -457,14 +458,14 @@ unsafe fn load_objc_classes() {
         let start: usize = unsafe { msg_send![this, start] };
 
         // SAFETY: -(const void *)bytes is implemented on NSData
-        let ptr: *const u8 = unsafe { msg_send![Retained::as_ptr(&data), bytes] };
+        let ptr: *const c_void = unsafe { msg_send![Retained::as_ptr(&data), bytes] };
         let len = data.len();
 
         if ptr.is_null() {
             BinaryParser::from_ref(&[])
         } else {
             // SAFETY: ptr is nonnull and aligned (always because aligment of u8 is 1)
-            let slice = unsafe { from_raw_parts(ptr, len) };
+            let slice = unsafe { from_raw_parts(ptr.cast(), len) };
 
             BinaryParser::from_ref(&slice[start..])
         }
@@ -502,156 +503,156 @@ unsafe fn load_objc_classes() {
             let mutable_data: Retained<NSMutableData> = unsafe { msg_send![Retained::as_ptr(&$this), mutableData] };
             let mut $serializer = BinarySerializer::new(Vec::new());
             $write_expr;
-            unsafe { msg_send![Retained::as_ptr(&mutable_data), appendBytes:$serializer.as_ptr(), length:$serializer.len()] };
+            let _: () = unsafe { msg_send![Retained::as_ptr(&mutable_data), appendBytes:$serializer.as_ptr(), length:$serializer.len()] };
         }};
     }
 
     let encoding = c"@@:";
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByte), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_byte(parser.take_byte()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByte:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_byte(parser.take_byte(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeShort), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_short(parser.take_short()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeShort:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_short(parser.take_short(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeInt), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_int(parser.take_int()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeInt:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_int(parser.take_int(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLong), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_long(parser.take_long()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLong:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_long(parser.take_long(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeFloat), {
-            extern "C-unwind" fn take_byte(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_float(parser.take_float()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeFloat:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_float(parser.take_float(root)?)))
             }
 
-            mem::transmute(take_byte as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeDouble), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_double(parser.take_double()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeDouble:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_double(parser.take_double(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByteArray), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByteArray:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
                 impl_binding!(&this => |mut parser| {
-                    let value = parser.take_byte_array()?;
+                    let value = parser.take_byte_array(root)?;
                     // SAFETY: i8 and u8 are the same
                     let bytes: Box<[u8]> = unsafe { mem::transmute(value.into_inner()) };
                     Some(objc_byte_array(&bytes))
                 })
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeString), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_string(&parser.take_string()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeString:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_string(&parser.take_string(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeList), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_list(parser.take_list()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeList:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_list(parser.take_list(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeCompound), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_compound(parser.take_compound()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeCompound:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_compound(parser.take_compound(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeIntArray), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_int_array(&**parser.take_int_array()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeIntArray:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_int_array(&**parser.take_int_array(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLongArray), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_long_array(&**parser.take_long_array()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLongArray:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_long_array(&**parser.take_long_array(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }
 
     unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeTag), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_tag(parser.take_tag()?)))
+        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeTag:), {
+            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(&this => |mut parser| Some(objc_tag(parser.take_tag(root)?)))
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _) -> _)
+            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
         }, encoding.as_ptr()).as_bool();
         assert!(is_ok);
     }

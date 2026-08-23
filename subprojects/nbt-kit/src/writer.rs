@@ -123,14 +123,14 @@ impl DoubleWriter for BinarySerializer {
 
 impl ByteArrayWriter for BinarySerializer {
     fn write_byte_array(&mut self, value: ByteArray) {
-        self.inner.extend((value.len() as u64).to_be_bytes());
+        self.inner.extend((value.len() as u32).to_be_bytes());
         self.inner.extend(value.into_inner().into_iter().map(|x| x as u8));
     }
 }
 
 impl StringWriter for BinarySerializer {
     fn write_string(&mut self, value: String) {
-        self.inner.extend((value.len() as u32).to_be_bytes());
+        self.inner.extend((value.len() as u16).to_be_bytes());
         self.inner.extend(value.as_bytes());
     }
 }
@@ -140,6 +140,7 @@ impl ListWriter for BinarySerializer {
         macro_rules! impl_list {
             (($id:expr, $ty:literal) |$v:ident| $expr:expr) => {{
                 self.inner.push($ty);
+                self.inner.extend(($id.len() as u32).to_be_bytes());
 
                 for $v in $id {
                     $expr
@@ -243,7 +244,7 @@ impl CompoundWriter for BinarySerializer {
 
 impl IntArrayWriter for BinarySerializer {
     fn write_int_array(&mut self, value: IntArray) {
-        self.inner.extend((value.len() as u64).to_be_bytes());
+        self.inner.extend((value.len() as u32).to_be_bytes());
         for i in value.into_inner() {
             self.write_int(i);
         }
@@ -252,7 +253,7 @@ impl IntArrayWriter for BinarySerializer {
 
 impl LongArrayWriter for BinarySerializer {
     fn write_long_array(&mut self, value: LongArray) {
-        self.inner.extend((value.len() as u64).to_be_bytes());
+        self.inner.extend((value.len() as u32).to_be_bytes());
         for l in value.into_inner() {
             self.write_long(l);
         }

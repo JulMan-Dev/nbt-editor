@@ -4,10 +4,12 @@ use alloc::string::String;
 
 macro_rules! impl_tag_list {
     { $($id:ident$(($ty:ty))?),+ $(,)? } => {
+        #[derive(PartialEq, Debug)]
         pub enum Tag {
             $($id$(($ty))?),+
         }
 
+        #[derive(PartialEq, Debug)]
         pub enum List {
             $($id$((Box<[$ty]>))?),+
         }
@@ -32,7 +34,8 @@ impl_tag_list! {
 
 macro_rules! transparent {
     ($($vis:vis struct $id:ident = $ty:ty;)+) => {
-        $(#[repr(transparent)]
+        $(#[derive(PartialEq, Debug)]
+        #[repr(transparent)]
         $vis struct $id($ty);
 
         impl $id {

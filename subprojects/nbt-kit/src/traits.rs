@@ -2,7 +2,7 @@ use alloc::string::String;
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
 
 pub trait ByteProducer {
-    fn take_byte(&mut self) -> Option<i8>;
+    fn take_byte(&mut self, root: bool) -> Option<i8>;
 }
 
 pub trait ByteWriter {
@@ -10,7 +10,7 @@ pub trait ByteWriter {
 }
 
 pub trait ShortProducer {
-    fn take_short(&mut self) -> Option<i16>;
+    fn take_short(&mut self, root: bool) -> Option<i16>;
 }
 
 pub trait ShortWriter {
@@ -18,7 +18,7 @@ pub trait ShortWriter {
 }
 
 pub trait IntProducer {
-    fn take_int(&mut self) -> Option<i32>;
+    fn take_int(&mut self, root: bool) -> Option<i32>;
 }
 
 pub trait IntWriter {
@@ -26,7 +26,7 @@ pub trait IntWriter {
 }
 
 pub trait LongProducer {
-    fn take_long(&mut self) -> Option<i64>;
+    fn take_long(&mut self, root: bool) -> Option<i64>;
 }
 
 pub trait LongWriter {
@@ -34,7 +34,7 @@ pub trait LongWriter {
 }
 
 pub trait FloatProducer {
-    fn take_float(&mut self) -> Option<f32>;
+    fn take_float(&mut self, root: bool) -> Option<f32>;
 }
 
 pub trait FloatWriter {
@@ -42,7 +42,7 @@ pub trait FloatWriter {
 }
 
 pub trait DoubleProducer {
-    fn take_double(&mut self) -> Option<f64>;
+    fn take_double(&mut self, root: bool) -> Option<f64>;
 }
 
 pub trait DoubleWriter {
@@ -50,7 +50,7 @@ pub trait DoubleWriter {
 }
 
 pub trait ByteArrayProducer {
-    fn take_byte_array(&mut self) -> Option<ByteArray>;
+    fn take_byte_array(&mut self, root: bool) -> Option<ByteArray>;
 }
 
 pub trait ByteArrayWriter {
@@ -58,7 +58,7 @@ pub trait ByteArrayWriter {
 }
 
 pub trait StringProducer {
-    fn take_string(&mut self) -> Option<String>;
+    fn take_string(&mut self, root: bool) -> Option<String>;
 }
 
 pub trait StringWriter {
@@ -66,7 +66,7 @@ pub trait StringWriter {
 }
 
 pub trait ListProducer {
-    fn take_list(&mut self) -> Option<List>;
+    fn take_list(&mut self, root: bool) -> Option<List>;
 }
 
 pub trait ListWriter {
@@ -74,7 +74,7 @@ pub trait ListWriter {
 }
 
 pub trait CompoundProducer {
-    fn take_compound(&mut self) -> Option<Compound>;
+    fn take_compound(&mut self, root: bool) -> Option<Compound>;
 }
 
 pub trait CompoundWriter {
@@ -82,7 +82,7 @@ pub trait CompoundWriter {
 }
 
 pub trait IntArrayProducer  {
-    fn take_int_array(&mut self) -> Option<IntArray>;
+    fn take_int_array(&mut self, root: bool) -> Option<IntArray>;
 }
 
 pub trait IntArrayWriter {
@@ -90,7 +90,7 @@ pub trait IntArrayWriter {
 }
 
 pub trait LongArrayProducer {
-    fn take_long_array(&mut self) -> Option<LongArray>;
+    fn take_long_array(&mut self, root: bool) -> Option<LongArray>;
 }
 
 pub trait LongArrayWriter {
@@ -98,7 +98,7 @@ pub trait LongArrayWriter {
 }
 
 pub trait TagProducer {
-    fn take_tag(&mut self) -> Option<Tag>;
+    fn take_tag(&mut self, root: bool) -> Option<Tag>;
 }
 
 pub trait TagWriter {
