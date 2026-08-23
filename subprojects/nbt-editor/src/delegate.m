@@ -1,15 +1,17 @@
 #import "delegate.h"
+#import "content.h"
+#import "controller.h"
 
-@implementation NBTEditorDelegate {
-    NSApplication *application;
-    NSDocumentController *controller;
+@implementation NBTEditorDelegate
+
+- (void)applicationWillFinishLaunching:(NSNotification *)notification
+{
+    // this ensures the NBTDocumentController is made at least once
+    (void)[NBTDocumentController sharedDocumentController];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    self->application = [NSApplication sharedApplication];
-    self->controller = [NSDocumentController sharedDocumentController];
-    
     // making the menu
     NSMenu *mainMenu = [NSMenu new];
     
@@ -37,17 +39,68 @@
     
     // File submenu
     NSMenu *fileMenu = [[NSMenu alloc] initWithTitle:@"File"];
-    [fileMenu addItemWithTitle:@"New"
-                        action:@selector(newDocument:)
-                 keyEquivalent:@"n"];
+    
+    NSMenuItem *newItem = [[NSMenuItem alloc] initWithTitle:@"New"
+                                                      action:@selector(newDocument:)
+                                               keyEquivalent:@"n"];
+    newItem.target = nil;
+    [fileMenu addItem:newItem];
+    
+    NSMenuItem *openItem = [[NSMenuItem alloc] initWithTitle:@"Open…"
+                                                       action:@selector(openDocument:)
+                                                keyEquivalent:@"o"];
+    openItem.target = nil;
+    [fileMenu addItem:openItem];
+
+    NSMenuItem *saveItem = [[NSMenuItem alloc] initWithTitle:@"Save"
+                                                       action:@selector(saveDocument:)
+                                                keyEquivalent:@"s"];
+    saveItem.target = nil;
+    [fileMenu addItem:saveItem];
+
+    NSMenuItem *saveAsItem = [[NSMenuItem alloc] initWithTitle:@"Save As…"
+                                                         action:@selector(saveDocumentAs:)
+                                                  keyEquivalent:@"S"]; // Shift+Cmd+S
+    saveAsItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagShift;
+    saveAsItem.target = nil;
+    [fileMenu addItem:saveAsItem];
+    
     NSMenuItem *fileItemMenu = [[NSMenuItem alloc] initWithTitle:@"File"
                                                           action:nil
                                                    keyEquivalent:@""];
     [fileItemMenu setSubmenu:fileMenu];
     [mainMenu addItem:fileItemMenu];
     
-    [self->application setMainMenu:mainMenu];
-    [self->application activateIgnoringOtherApps:YES];
+    [[NSApplication sharedApplication] setMainMenu:mainMenu];
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    
+    // checking arguments
+    NSArray *args = [[NSProcessInfo processInfo] arguments];
+    NBTDocumentController *controller = [NBTDocumentController sharedDocumentController];
+    
+    if ([args count] > 1)
+    {
+        for (uintptr_t i = 1; i < [args count]; i++)
+        {
+            NSURL *url = [[NSURL alloc] initFileURLWithPath:args[i]];
+            
+            [controller openDocumentWithContentsOfURL:url
+                                              display:YES
+                                     ompletionHandler:^(NSDocument * _Nullable document,
+                                                        BOOL documentWasAlreadyOpen,
+                                                        NSError * _Nullable error) {
+                if (!document)
+                {
+                    NSLog(@"Failed to open %@, error: %@", url, error);
+                }
+            }];
+        }
+    }
+    else
+    {
+        [controller openUntitledDocumentAndDisplay:YES
+                                             error:nil];
+    }
 }
 
 @end
