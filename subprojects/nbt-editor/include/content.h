@@ -5,10 +5,16 @@
 
 @interface NBTDocument : NSDocument
 
+- (nullable NBTBaseTag *)tag;
+
 @end
 
-@interface NBTWindowContent : NSObject
+@interface NBTCollectionWrapper : NSObject <NSOutlineViewDataSource, NSOutlineViewDelegate, NSCopying, NSMutableCopying>
 
-- (nonnull instancetype)initWithTag:(nonnull NBTBaseTag *)tag;
++ (nonnull instancetype)wrapperWithTag:(nullable NBTBaseTag *)tag
+                                parent:(nullable NBTCollectionWrapper *)parent;
+
+- (nonnull instancetype)initWithTag:(nullable NBTBaseTag *)tag
+                             parent:(nullable NBTCollectionWrapper *)parent;
 
 @end

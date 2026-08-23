@@ -13,3 +13,6 @@ target_link_libraries(NBTEditor PRIVATE
         "$<LINK_LIBRARY:FRAMEWORK,AppKit>"
         NBTKit
 )
+target_compile_options(NBTEditor PRIVATE
+        "$<$<COMPILE_LANGUAGE:OBJC>:-fobjc-arc>"
+)

@@ -48,6 +48,8 @@
 
 @implementation NBTWindowController {
     NBTDocument *document;
+    // this is linked to the document but a state of it, it is a view state
+    NBTCollectionWrapper *wrapper;
 }
 
 - (void)setDocument:(id)document
@@ -55,6 +57,8 @@
     if ([document isKindOfClass:[NBTDocument class]])
     {
         self->document = document;
+        self->wrapper = [NBTCollectionWrapper wrapperWithTag:[self->document tag]
+                                                      parent:nil];
     }
 }
 
@@ -79,10 +83,38 @@
 
     [self setWindow:window];
     [window center];
-
+    
     NSView *contentView = [[NSView alloc] initWithFrame:frame];
-    window.contentView = contentView;
-
+    [window setContentView:contentView];
+    
+    NSOutlineView *mainView = [[NSOutlineView alloc] initWithFrame:frame];
+    [contentView addSubview:mainView];
+    
+    NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:frame];
+    [scrollView setHasHorizontalScroller:YES];
+    [scrollView setDocumentView:mainView];
+    [contentView addSubview:scrollView];
+    
+    NSTableColumn *mainCol = [[NSTableColumn alloc] initWithIdentifier:@"NBTKey"];
+    [mainCol setTitle:@"Key"];
+    [mainView addTableColumn:mainCol];
+    [mainView setOutlineTableColumn:mainCol];
+    
+    NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:@"NBTValue"];
+    [mainCol setTitle:@"Value"];
+    [mainView addTableColumn:col];
+    
+    if (self->wrapper)
+    {
+        [mainView setDataSource:self->wrapper];
+        [mainView setDelegate:self->wrapper];
+        [mainView reloadData];
+    }
+    else
+    {
+        NSLog(@"may not set NSOutlineView dataSource, wrapper is (null)");
+    }
+    
     [self windowDidLoad];
 }
 

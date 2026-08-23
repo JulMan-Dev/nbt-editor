@@ -84,16 +84,21 @@
         {
             NSURL *url = [[NSURL alloc] initFileURLWithPath:args[i]];
             
-            [controller openDocumentWithContentsOfURL:url
-                                              display:YES
-                                     ompletionHandler:^(NSDocument * _Nullable document,
-                                                        BOOL documentWasAlreadyOpen,
-                                                        NSError * _Nullable error) {
-                if (!document)
+            NSError *error = nil;
+            NBTDocument *document = [[NBTDocument alloc] initWithContentsOfURL:url
+                                                                        ofType:@"net.minecraft.NBT"
+                                                                         error:&error];
+            
+            if (document) {
+                [[NSDocumentController sharedDocumentController] addDocument:document];
+                [document makeWindowControllers];
+                for (NSWindowController *controller in [document windowControllers])
                 {
-                    NSLog(@"Failed to open %@, error: %@", url, error);
+                    [controller showWindow:nil];
                 }
-            }];
+            } else {
+                NSLog(@"Failed to open %@, error: %@", url, error);
+            }
         }
     }
     else
