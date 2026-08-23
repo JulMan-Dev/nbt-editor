@@ -99,6 +99,8 @@ pub trait LongArrayWriter {
 
 pub trait TagProducer {
     fn take_tag(&mut self, root: bool) -> Option<Tag>;
+
+    fn take_compressed_tag(&mut self, root: bool) -> Option<Tag>;
 }
 
 pub trait TagWriter {

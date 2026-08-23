@@ -663,7 +663,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (NSString *)value
 {
-    return self.value;
+    return self->data;
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -731,7 +731,8 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 {
     self->type = [NBTList validateArray:value];
     self->data = [[NSArray alloc] initWithArray:value
-                                      copyItems:YES];
+                                      copyItems:NO];
+    // TODO: implementing NSCopying on NBTBaseTag, which somehow not implemented
     return self;
 }
 

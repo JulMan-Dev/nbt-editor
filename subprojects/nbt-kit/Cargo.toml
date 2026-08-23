@@ -13,6 +13,9 @@ name = "debug-nbt"
 default = []
 objc = ["dep:objc2", "dep:objc2-foundation", "dep:ctor"]
 
+[dependencies]
+flate2 = "1.1.9"
+
 [dependencies.objc2]
 version = "0.6.4"
 optional = true

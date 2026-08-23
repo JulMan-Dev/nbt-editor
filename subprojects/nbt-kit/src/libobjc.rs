@@ -29,9 +29,9 @@ fn objc_byte(v: i8) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTByte.
 #[inline(always)]
-unsafe fn rust_byte(v: &Retained<AnyObject>) -> i8 {
+unsafe fn rust_byte(v: *mut AnyObject) -> i8 {
     // SAFETY: -value is implemented on NBTByte
-    unsafe { msg_send![Retained::as_ptr(v), value] }
+    unsafe { msg_send![v, value] }
 }
 
 #[ctor::ctor(unsafe)] static OBJC_NBT_SHORT: &'static AnyClass = class!(NBTShort);
@@ -46,9 +46,9 @@ fn objc_short(v: i16) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTShort.
 #[inline(always)]
-unsafe fn rust_short(v: &Retained<AnyObject>) -> i16 {
+unsafe fn rust_short(v: *mut AnyObject) -> i16 {
     // SAFETY: -value is implemented on NBTShort
-    unsafe { msg_send![Retained::as_ptr(v), value] }
+    unsafe { msg_send![v, value] }
 }
 
 #[ctor::ctor(unsafe)] static OBJC_NBT_INT: &'static AnyClass = class!(NBTInt);
@@ -63,9 +63,9 @@ fn objc_int(v: i32) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTInt.
 #[inline(always)]
-unsafe fn rust_int(v: &Retained<AnyObject>) -> i32 {
+unsafe fn rust_int(v: *mut AnyObject) -> i32 {
     // SAFETY: -value is implemented on NBTInt
-    unsafe { msg_send![Retained::as_ptr(v), value] }
+    unsafe { msg_send![v, value] }
 }
 
 #[ctor::ctor(unsafe)] static OBJC_NBT_LONG: &'static AnyClass = class!(NBTLong);
@@ -80,9 +80,9 @@ fn objc_long(v: i64) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTLong.
 #[inline(always)]
-unsafe fn rust_long(v: &Retained<AnyObject>) -> i64 {
+unsafe fn rust_long(v: *mut AnyObject) -> i64 {
     // SAFETY: -value is implemented on NBTLong
-    unsafe { msg_send![Retained::as_ptr(v), value] }
+    unsafe { msg_send![v, value] }
 }
 
 #[ctor::ctor(unsafe)] static OBJC_NBT_FLOAT: &'static AnyClass = class!(NBTFloat);
@@ -97,9 +97,9 @@ fn objc_float(v: f32) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTFloat.
 #[inline(always)]
-unsafe fn rust_float(v: &Retained<AnyObject>) -> f32 {
+unsafe fn rust_float(v: *mut AnyObject) -> f32 {
     // SAFETY: -value is implemented on NBTFloat
-    unsafe { msg_send![Retained::as_ptr(v), value] }
+    unsafe { msg_send![v, value] }
 }
 
 #[ctor::ctor(unsafe)] static OBJC_NBT_DOUBLE: &'static AnyClass = class!(NBTDouble);
@@ -114,9 +114,9 @@ fn objc_double(v: f64) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTDouble.
 #[inline(always)]
-unsafe fn rust_double(v: &Retained<AnyObject>) -> f64 {
+unsafe fn rust_double(v: *mut AnyObject) -> f64 {
     // SAFETY: -value is implemented on NBTDouble
-    unsafe { msg_send![Retained::as_ptr(v), value] }
+    unsafe { msg_send![v, value] }
 }
 
 #[ctor::ctor(unsafe)] static OBJC_NBT_BYTE_ARRAY: &'static AnyClass = class!(NBTByteArray);
@@ -132,9 +132,9 @@ fn objc_byte_array(data: &[u8]) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTByteArray.
 #[inline(always)]
-unsafe fn rust_byte_array(v: &Retained<AnyObject>) -> ByteArray {
+unsafe fn rust_byte_array(v: *mut AnyObject) -> ByteArray {
     // SAFETY: -data is implemented on NBTByteArray
-    let ns_data: Retained<NSData> = unsafe { msg_send![Retained::as_ptr(v), data] };
+    let ns_data: Retained<NSData> = unsafe { msg_send![v, data] };
     // SAFETY: -bytes is implemented on NSData
     let ptr: *const u8 = unsafe { msg_send![Retained::as_ptr(&ns_data), bytes] };
     let len = ns_data.len();
@@ -163,9 +163,9 @@ fn objc_string(s: &str) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTString.
 #[inline(always)]
-unsafe fn rust_string(v: &Retained<AnyObject>) -> String {
+unsafe fn rust_string(v: *mut AnyObject) -> String {
     // SAFETY: -value is implemented on NBTString
-    let ns_string: Retained<NSString> = unsafe { msg_send![Retained::as_ptr(v), value] };
+    let ns_string: Retained<NSString> = unsafe { msg_send![v, value] };
     ns_string.to_string()
 }
 
@@ -202,55 +202,57 @@ fn objc_list(list: List) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTList.
 #[inline(always)]
-unsafe fn rust_list(v: &Retained<AnyObject>) -> List {
+unsafe fn rust_list(v: *mut AnyObject) -> List {
     // SAFETY: -type is implemented on NBTList
-    let element_class: *const AnyClass = unsafe { msg_send![Retained::as_ptr(v), type] };
+    let element_class: *const AnyClass = unsafe { msg_send![v, type] };
     // SAFETY: -value is implemented on NBTList
-    let ns_array: Retained<NSArray<AnyObject>> = unsafe { msg_send![Retained::as_ptr(v), value] };
+    let ns_array: Retained<NSArray<AnyObject>> = unsafe { msg_send![v, value] };
 
     if element_class.is_null() || ns_array.len() == 0 {
         return List::Empty;
     }
+
+    let iter = ns_array.iter().map(Retained::into_raw);
 
     // SAFETY: the pointer may not be null and is well-aligned.
     let element_class = unsafe { &*element_class };
 
     if ptr::eq(element_class, *OBJC_NBT_BYTE) {
         // SAFETY: all items are NBTByte, we checked the class pointer.
-        List::Byte(ns_array.iter().map(|obj| unsafe { rust_byte(&obj) }).collect())
+        List::Byte(iter.map(|obj| unsafe { rust_byte(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_SHORT) {
         // SAFETY: all items are NBTShort, we checked the class pointer.
-        List::Short(ns_array.iter().map(|obj| unsafe { rust_short(&obj) }).collect())
+        List::Short(iter.map(|obj| unsafe { rust_short(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_INT) {
         // SAFETY: all items are NBTInt, we checked the class pointer.
-        List::Int(ns_array.iter().map(|obj| unsafe { rust_int(&obj) }).collect())
+        List::Int(iter.map(|obj| unsafe { rust_int(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_LONG) {
         // SAFETY: all items are NBTLong, we checked the class pointer.
-        List::Long(ns_array.iter().map(|obj| unsafe { rust_long(&obj) }).collect())
+        List::Long(iter.map(|obj| unsafe { rust_long(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_FLOAT) {
         // SAFETY: all items are NBTFloat, we checked the class pointer.
-        List::Float(ns_array.iter().map(|obj| unsafe { rust_float(&obj) }).collect())
+        List::Float(iter.map(|obj| unsafe { rust_float(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_DOUBLE) {
         // SAFETY: all items are NBTDouble, we checked the class pointer.
-        List::Double(ns_array.iter().map(|obj| unsafe { rust_double(&obj) }).collect())
+        List::Double(iter.map(|obj| unsafe { rust_double(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_BYTE_ARRAY) {
         // SAFETY: all items are NBTByteArray, we checked the class pointer.
-        List::ByteArray(ns_array.iter().map(|obj| unsafe { rust_byte_array(&obj) }).collect())
+        List::ByteArray(iter.map(|obj| unsafe { rust_byte_array(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_STRING) {
         // SAFETY: all items are NBTString, we checked the class pointer.
-        List::String(ns_array.iter().map(|obj| unsafe { rust_string(&obj) }).collect())
+        List::String(iter.map(|obj| unsafe { rust_string(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_LIST) {
         // SAFETY: all items are NBTList, we checked the class pointer.
-        List::List(ns_array.iter().map(|obj| unsafe { rust_list(&obj) }).collect())
+        List::List(iter.map(|obj| unsafe { rust_list(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_COMPOUND) {
         // SAFETY: all items are NBTCompound, we checked the class pointer.
-        List::Compound(ns_array.iter().map(|obj| unsafe { rust_compound(&obj) }).collect())
+        List::Compound(iter.map(|obj| unsafe { rust_compound(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_INT_ARRAY) {
         // SAFETY: all items are NBTIntArray, we checked the class pointer.
-        List::IntArray(ns_array.iter().map(|obj| unsafe { rust_int_array(&obj) }).collect())
+        List::IntArray(iter.map(|obj| unsafe { rust_int_array(obj) }).collect())
     } else if ptr::eq(element_class, *OBJC_NBT_LONG_ARRAY) {
         // SAFETY: all items are NBTLongArray, we checked the class pointer.
-        List::LongArray(ns_array.iter().map(|obj| unsafe { rust_long_array(&obj) }).collect())
+        List::LongArray(iter.map(|obj| unsafe { rust_long_array(obj) }).collect())
     } else {
         List::Empty
     }
@@ -279,15 +281,15 @@ fn objc_compound(compound: Compound) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTCompound.
 #[inline(always)]
-unsafe fn rust_compound(v: &Retained<AnyObject>) -> Compound {
+unsafe fn rust_compound(v: *mut AnyObject) -> Compound {
     // SAFETY: -value is implemented on NBTCompound
-    let ns_dict: Retained<NSDictionary<NSString, AnyObject>> = unsafe { msg_send![Retained::as_ptr(v), value] };
+    let ns_dict: Retained<NSDictionary<NSString, AnyObject>> = unsafe { msg_send![v, value] };
 
     let mut tree = BTreeMap::new();
 
     for key in ns_dict.keys() {
         if let Some(x) = ns_dict.objectForKey(&key) {
-            tree.insert(key.to_string(), unsafe { rust_tag(&x) });
+            tree.insert(key.to_string(), unsafe { rust_tag(Retained::into_raw(x)) });
         }
     }
 
@@ -306,11 +308,11 @@ fn objc_int_array(array: &[i32]) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTIntArray.
 #[inline(always)]
-unsafe fn rust_int_array(v: &Retained<AnyObject>) -> IntArray {
+unsafe fn rust_int_array(v: *mut AnyObject) -> IntArray {
     // SAFETY: -ptr is implemented on NBTIntArray
-    let ptr: *const i32 = unsafe { msg_send![Retained::as_ptr(v), ptr] };
+    let ptr: *const i32 = unsafe { msg_send![v, ptr] };
     // SAFETY: -len is implemented on NBTIntArray
-    let len: usize = unsafe { msg_send![Retained::as_ptr(v), len] };
+    let len: usize = unsafe { msg_send![v, len] };
 
     if ptr.is_null() {
         IntArray::new(Box::new([]))
@@ -333,11 +335,11 @@ fn objc_long_array(array: &[i64]) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTLongArray.
 #[inline(always)]
-unsafe fn rust_long_array(v: &Retained<AnyObject>) -> LongArray {
+unsafe fn rust_long_array(v: *mut AnyObject) -> LongArray {
     // SAFETY: -ptr is implemented on NBTLongArray
-    let ptr: *const i64 = unsafe { msg_send![Retained::as_ptr(v), ptr] };
+    let ptr: *const i64 = unsafe { msg_send![v, ptr] };
     // SAFETY: -len is implemented on NBTLongArray
-    let len: usize = unsafe { msg_send![Retained::as_ptr(v), len] };
+    let len: usize = unsafe { msg_send![v, len] };
 
     if ptr.is_null() {
         LongArray::new(Box::new([]))
@@ -384,64 +386,64 @@ fn objc_tag(tag: Tag) -> Retained<AnyObject> {
 ///
 /// The retained value must be a subclass of NBTBaseTag.
 #[inline(always)]
-unsafe fn rust_tag(v: &Retained<AnyObject>) -> Tag {
+unsafe fn rust_tag(v: *mut AnyObject) -> Tag {
     // SAFETY: -isKindOfClass: is implemented on NSObject
-    let is_byte: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_BYTE] };
+    let is_byte: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_BYTE] };
     if is_byte {
         return Tag::Byte(unsafe { rust_byte(v) });
     }
 
-    let is_short: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_SHORT] };
+    let is_short: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_SHORT] };
     if is_short {
         return Tag::Short(unsafe { rust_short(v) });
     }
 
-    let is_int: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_INT] };
+    let is_int: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_INT] };
     if is_int {
         return Tag::Int(unsafe { rust_int(v) });
     }
 
-    let is_long: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_LONG] };
+    let is_long: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_LONG] };
     if is_long {
         return Tag::Long(unsafe { rust_long(v) });
     }
 
-    let is_float: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_FLOAT] };
+    let is_float: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_FLOAT] };
     if is_float {
         return Tag::Float(unsafe { rust_float(v) });
     }
 
-    let is_double: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_DOUBLE] };
+    let is_double: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_DOUBLE] };
     if is_double {
         return Tag::Double(unsafe { rust_double(v) });
     }
 
-    let is_byte_array: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_BYTE_ARRAY] };
+    let is_byte_array: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_BYTE_ARRAY] };
     if is_byte_array {
         return Tag::ByteArray(unsafe { rust_byte_array(v) });
     }
 
-    let is_string: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_STRING] };
+    let is_string: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_STRING] };
     if is_string {
         return Tag::String(unsafe { rust_string(v) });
     }
 
-    let is_list: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_LIST] };
+    let is_list: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_LIST] };
     if is_list {
         return Tag::List(unsafe { rust_list(v) });
     }
 
-    let is_compound: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_COMPOUND] };
+    let is_compound: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_COMPOUND] };
     if is_compound {
         return Tag::Compound(unsafe { rust_compound(v) });
     }
 
-    let is_int_array: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_INT_ARRAY] };
+    let is_int_array: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_INT_ARRAY] };
     if is_int_array {
         return Tag::IntArray(unsafe { rust_int_array(v) });
     }
 
-    let is_long_array: bool = unsafe { msg_send![Retained::as_ptr(v), isKindOfClass:*OBJC_NBT_LONG_ARRAY] };
+    let is_long_array: bool = unsafe { msg_send![v, isKindOfClass:*OBJC_NBT_LONG_ARRAY] };
     if is_long_array {
         return Tag::LongArray(unsafe { rust_long_array(v) });
     }
@@ -451,7 +453,7 @@ unsafe fn rust_tag(v: &Retained<AnyObject>) -> Tag {
 
 #[ctor::ctor(unsafe)]
 unsafe fn load_objc_classes() {
-    unsafe fn get_parser<'data>(this: *const AnyObject) -> BinaryParser<'data> {
+    unsafe fn get_parser<'data>(this: *mut AnyObject) -> BinaryParser<'data> {
         // SAFETY: -(NSData *)data is implemented on NBTBinaryParser
         let data: Retained<NSData> = unsafe { msg_send![this, data] };
         // SAFETY: -(uintptr_t)start is implemented on NBTBinaryParser
@@ -474,45 +476,43 @@ unsafe fn load_objc_classes() {
     macro_rules! impl_binding {
         ($this:expr => |mut $id:ident| $expr:expr) => {{
             let this = $this;
-            // SAFETY: $this should be a &(NBTBinaryParser *) equivalent
-            let original = unsafe { get_parser(Retained::as_ptr(this)) };
-            let mut $id = original.clone();
+            // SAFETY: `this` must be a valid pointer to an NBTBinaryParser instance.
+            let initial_parser = unsafe { get_parser(this) };
+            let mut $id = initial_parser.clone();
 
-            let value = $expr;
+            let result = $expr;
 
-            let original: &[u8] = &original;
-            let after: &[u8] = &$id;
-
-            if let Some(first) = after.first() {
-                let to_add = original.element_offset(first).unwrap();
-
-                // SAFETY: start is an ivar of NBTBinaryParser
+            if let Some(current_pos) = $id.first() {
+                // SAFETY: The 'start' ivar is a verified usize instance variable of NBTBinaryParser.
                 unsafe {
-                    let start: *mut usize = OBJC_NBT_PARSER.instance_variable(c"start")
-                        .unwrap().load_ptr(&this);
-                    *start += to_add;
+                    let consumed = initial_parser.element_offset(current_pos).unwrap();
+                    let start_ptr: *mut usize = OBJC_NBT_PARSER.instance_variable(c"start")
+                        .expect("ivar 'start' exists on NBTBinaryParser")
+                        .load_ptr(&*this);
+                    *start_ptr += consumed;
                 }
             }
 
-            value
+            result
         }};
     }
 
     macro_rules! impl_write {
         ($this:expr => |$serializer:ident| $write_expr:expr) => {{
-            let mutable_data: Retained<NSMutableData> = unsafe { msg_send![Retained::as_ptr(&$this), mutableData] };
+            let this = $this;
+            let mutable_data: Retained<NSMutableData> = unsafe { msg_send![this, mutableData] };
             let mut $serializer = BinarySerializer::new(Vec::new());
             $write_expr;
             let _: () = unsafe { msg_send![Retained::as_ptr(&mutable_data), appendBytes:$serializer.as_ptr(), length:$serializer.len()] };
         }};
     }
 
-    let encoding = c"@@:";
+    let encoding = c"@@:B";
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByte:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_byte(parser.take_byte(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_byte(parser.take_byte(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -522,8 +522,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeShort:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_short(parser.take_short(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_short(parser.take_short(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -533,8 +533,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeInt:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_int(parser.take_int(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_int(parser.take_int(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -544,8 +544,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLong:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_long(parser.take_long(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_long(parser.take_long(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -555,8 +555,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeFloat:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_float(parser.take_float(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_float(parser.take_float(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -566,8 +566,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeDouble:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_double(parser.take_double(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_double(parser.take_double(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -577,8 +577,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByteArray:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| {
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| {
                     let value = parser.take_byte_array(root)?;
                     // SAFETY: i8 and u8 are the same
                     let bytes: Box<[u8]> = unsafe { mem::transmute(value.into_inner()) };
@@ -593,8 +593,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeString:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_string(&parser.take_string(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_string(&parser.take_string(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -604,8 +604,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeList:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_list(parser.take_list(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_list(parser.take_list(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -615,8 +615,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeCompound:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_compound(parser.take_compound(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_compound(parser.take_compound(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -626,8 +626,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeIntArray:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_int_array(&**parser.take_int_array(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_int_array(&**parser.take_int_array(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -637,8 +637,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLongArray:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_long_array(&**parser.take_long_array(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_long_array(&**parser.take_long_array(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -648,8 +648,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeTag:), {
-            extern "C-unwind" fn take(this: Retained<AnyObject>, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(&this => |mut parser| Some(objc_tag(parser.take_tag(root)?)))
+            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
+                impl_binding!(this => |mut parser| Some(objc_tag(parser.take_tag(root)?)))
             }
 
             mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
@@ -657,12 +657,14 @@ unsafe fn load_objc_classes() {
         assert!(is_ok);
     }
 
+    // TODO: write Objective-C binding for parser.take_compressed_tag
+
     let write_encoding = c"v@:@";
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeByte:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_byte(unsafe { rust_byte(&value) }));
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_byte(unsafe { rust_byte(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -672,8 +674,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeShort:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_short(unsafe { rust_short(&value) }));
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_short(unsafe { rust_short(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -683,8 +685,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeInt:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_int(unsafe { rust_int(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_int(unsafe { rust_int(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -694,8 +696,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeLong:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_long(unsafe { rust_long(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_long(unsafe { rust_long(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -705,8 +707,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeFloat:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_float(unsafe { rust_float(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_float(unsafe { rust_float(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -716,8 +718,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeDouble:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_double(unsafe { rust_double(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_double(unsafe { rust_double(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -727,8 +729,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeByteArray:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_byte_array(unsafe { rust_byte_array(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_byte_array(unsafe { rust_byte_array(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -738,8 +740,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeString:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_string(unsafe { rust_string(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_string(unsafe { rust_string(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -749,8 +751,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeList:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_list(unsafe { rust_list(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_list(unsafe { rust_list(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -760,8 +762,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeCompound:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_compound(unsafe { rust_compound(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_compound(unsafe { rust_compound(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -771,8 +773,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeIntArray:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_int_array(unsafe { rust_int_array(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_int_array(unsafe { rust_int_array(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -782,8 +784,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeLongArray:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_long_array(unsafe { rust_long_array(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_long_array(unsafe { rust_long_array(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))
@@ -793,8 +795,8 @@ unsafe fn load_objc_classes() {
 
     unsafe {
         let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeTag:), {
-            extern "C-unwind" fn write(this: Retained<AnyObject>, _cmd: Sel, value: Retained<AnyObject>) {
-                impl_write!(this => |serializer| serializer.write_tag(unsafe { rust_tag(&value) }))
+            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
+                impl_write!(this => |serializer| serializer.write_tag(unsafe { rust_tag(value) }));
             }
 
             mem::transmute(write as extern "C-unwind" fn (_, _, _))

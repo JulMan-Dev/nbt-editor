@@ -8,6 +8,7 @@ pub mod kind;
 #[cfg(all(feature = "objc", not(test)))]
 pub mod libobjc;
 pub mod writer;
+pub mod stream;
 
 #[cfg(test)]
 mod tests {
