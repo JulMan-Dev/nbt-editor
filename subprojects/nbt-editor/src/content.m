@@ -3,6 +3,7 @@
 
 @implementation NBTDocument {
     NBTBaseTag *_tag;
+    BOOL _compressed;
 }
 
 - (instancetype)init
@@ -10,6 +11,7 @@
     self = [super init];
     if (self) {
         self->_tag = nil;
+        self->_compressed = NO;
     }
     return self;
 }
@@ -17,6 +19,11 @@
 - (NBTBaseTag *)tag
 {
     return self->_tag;
+}
+
+- (BOOL)compressed
+{
+    return self->_compressed;
 }
 
 + (BOOL)autosavesInPlace
@@ -54,18 +61,25 @@
                error:(NSError * _Nullable *)outError
 {
     NBTBinaryParser *parser = [NBTBinaryParser newWith:data];
-    NBTBaseTag *tag = [parser takeTag:YES];
+    NBTBaseTag *tag = nil;
     
-    if (!tag)
+    if ((tag = [parser takeTag:YES]))
     {
-        *outError = [NSError errorWithDomain:NSCocoaErrorDomain
-                                        code:NSFileReadCorruptFileError
-                                    userInfo:nil];
-        return NO;
+        self->_tag = tag;
+        self->_compressed = NO;
+        return YES;
+    }
+    else if ((tag = [parser takeCompressedTag:YES]))
+    {
+        self->_tag = tag;
+        self->_compressed = YES;
+        return YES;
     }
     
-    self->_tag = tag;
-    return YES;
+    *outError = [NSError errorWithDomain:NSCocoaErrorDomain
+                                    code:NSFileReadCorruptFileError
+                                userInfo:nil];
+    return NO;
 }
 
 @end

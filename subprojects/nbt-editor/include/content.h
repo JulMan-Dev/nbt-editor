@@ -6,6 +6,7 @@
 @interface NBTDocument : NSDocument
 
 - (nullable NBTBaseTag *)tag;
+- (BOOL)compressed;
 
 @end
 
