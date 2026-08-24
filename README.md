@@ -1,7 +1,7 @@
 # NBT Editor
 
 `NBT Editor` aims to be a NBT editor obviously but familiar for Windows users whose used
-[NBTEExplorer](https://github.com/jaquadro/NBTExplorer).
+[NBTExplorer](https://github.com/jaquadro/NBTExplorer).
 
 It's core, `NBTKit`, is written in Rust and Objective-C. While the GUI interface, the editor, is written in Objective-C
 linking with `NBTKit`.
