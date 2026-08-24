@@ -8,5 +8,8 @@ indent_style = space
 insert_final_newline = true
 max_line_length = 120
 
+[{CMakeLists.txt,*.cmake}]
+indent_size = 8
+
 [Info.plist.in]
 indent_style = tab
