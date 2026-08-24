@@ -19,7 +19,7 @@
               forTypes:(NSArray<NSString *> *)inTypes
      completionHandler:(void (^)(NSInteger))completionHandler
 {
-    openPanel.allowsMultipleSelection = NO;
+    [openPanel setAllowsMultipleSelection:NO];
     [super beginOpenPanel:openPanel
                  forTypes:inTypes
         completionHandler:completionHandler];
@@ -78,8 +78,8 @@
                                                      backing:NSBackingStoreBuffered
                                                        defer:NO];
 
-    window.title = @"Document";
-    window.releasedWhenClosed = NO;
+    [window setTitle:@"Document"];
+    [window setReleasedWhenClosed:NO];
 
     [self setWindow:window];
     [window center];
@@ -116,6 +116,27 @@
     }
     
     [self windowDidLoad];
+}
+
+- (void)windowDidLoad
+{
+    NSURL *fileUrl = [self->_document fileURL];
+    
+    if (fileUrl)
+    {
+        [[self window] setTitleWithRepresentedFilename:[fileUrl path]];
+    }
+    else
+    {
+        NSAlert *alert = [NSAlert new];
+        [alert setMessageText:@"New NBT Document"];
+        [alert addButtonWithTitle:@"Create"];
+        [alert addButtonWithTitle:@"Cancel"];
+        
+        [alert beginSheetModalForWindow:[self window]
+                      completionHandler:^(NSModalResponse res) {
+        }];
+    }
 }
 
 @end
