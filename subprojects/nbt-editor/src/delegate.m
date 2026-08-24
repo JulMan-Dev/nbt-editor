@@ -73,39 +73,6 @@
     
     [[NSApplication sharedApplication] setMainMenu:mainMenu];
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-    
-    // checking arguments
-    NSArray *args = [[NSProcessInfo processInfo] arguments];
-    NBTDocumentController *controller = [NBTDocumentController sharedDocumentController];
-    
-    if ([args count] > 1)
-    {
-        for (uintptr_t i = 1; i < [args count]; i++)
-        {
-            NSURL *url = [[NSURL alloc] initFileURLWithPath:args[i]];
-            
-            NSError *error = nil;
-            NBTDocument *document = [[NBTDocument alloc] initWithContentsOfURL:url
-                                                                        ofType:@"net.minecraft.NBT"
-                                                                         error:&error];
-            
-            if (document) {
-                [[NSDocumentController sharedDocumentController] addDocument:document];
-                [document makeWindowControllers];
-                for (NSWindowController *controller in [document windowControllers])
-                {
-                    [controller showWindow:nil];
-                }
-            } else {
-                NSLog(@"Failed to open %@, error: %@", url, error);
-            }
-        }
-    }
-    else
-    {
-        [controller openUntitledDocumentAndDisplay:YES
-                                             error:nil];
-    }
 }
 
 @end
