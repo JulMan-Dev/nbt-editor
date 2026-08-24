@@ -11,3 +11,9 @@ add_library(NBTKit SHARED)
 add_executable(NBTEditor)
 
 add_subdirectory(subprojects)
+
+add_custom_command(TARGET NBTEditor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "$<TARGET_BUNDLE_DIR:NBTKit>"
+        "$<TARGET_BUNDLE_DIR:NBTEditor>/Contents/Frameworks/NBTKit.framework"
+)
