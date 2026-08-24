@@ -16,21 +16,6 @@
     uintptr_t start;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(NSData *)data
 {
     return [[self alloc] initWith:data];
@@ -41,13 +26,6 @@
     self->data = d;
     self->start = 0;
     return self;
-}
-
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
 }
 
 - (NSData *)data
@@ -64,21 +42,6 @@
 
 @implementation NBTBinarySerializer {
     NSMutableData * _Nonnull data;
-}
-
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
 }
 
 + (instancetype)newWith:(NSData *)data
@@ -101,13 +64,6 @@
 {
     self->data = [d mutableCopy];
     return self;
-}
-
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
 }
 
 - (NSData *)data
@@ -173,21 +129,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     @protected int8_t value;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(int8_t)value
 {
     return [[self alloc] initWith:value];
@@ -200,13 +141,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     return self;
 }
 
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
-}
-
 - (int8_t)value
 {
     return self->value;
@@ -214,7 +148,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTByte newWith:self->value];
+    if (![self isKindOfClass:[NBTModifiableByte class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTByte newWith:self->value];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -237,21 +178,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     @protected int16_t value;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(int16_t)value
 {
     return [[self alloc] initWith:value];
@@ -263,13 +189,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     return self;
 }
 
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
-}
-
 - (int16_t)value
 {
     return self->value;
@@ -277,7 +196,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTShort newWith:self->value];
+    if (![self isKindOfClass:[NBTModifiableShort class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTShort newWith:self->value];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -300,21 +226,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     @protected int32_t value;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(int32_t)value
 {
     return [[self alloc] initWith:value];
@@ -326,13 +237,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     return self;
 }
 
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
-}
-
 - (int32_t)value
 {
     return self->value;
@@ -340,7 +244,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTInt newWith:self->value];
+    if (![self isKindOfClass:[NBTModifiableInt class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTInt newWith:self->value];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -363,21 +274,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     @protected int64_t value;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(int64_t)value
 {
     return [[self alloc] initWith:value];
@@ -389,13 +285,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     return self;
 }
 
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
-}
-
 - (int64_t)value
 {
     return self->value;
@@ -403,7 +292,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTLong newWith:self->value];
+    if (![self isKindOfClass:[NBTModifiableLong class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTLong newWith:self->value];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -426,21 +322,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     @protected float value;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(float)value
 {
     return [[self alloc] initWith:value];
@@ -452,13 +333,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     return self;
 }
 
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
-}
-
 - (float)value
 {
     return self->value;
@@ -466,7 +340,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTFloat newWith:self->value];
+    if (![self isKindOfClass:[NBTModifiableFloat class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTFloat newWith:self->value];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -489,21 +370,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     @protected double value;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(double)value
 {
     return [[self alloc] initWith:value];
@@ -515,13 +381,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     return self;
 }
 
-- (void)dealloc
-{
-    free(self);
-    return;
-    [super dealloc];
-}
-
 - (double)value
 {
     return self->value;
@@ -529,7 +388,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTDouble newWith:self->value];
+    if (![self isKindOfClass:[NBTModifiableDouble class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTDouble newWith:self->value];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -552,21 +418,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     NSData * _Nonnull data;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(NSData *)value
 {
     return [[self alloc] initWith:value];
@@ -580,8 +431,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (void)dealloc
 {
-    free(self);
-    return;
+    [self->data release];
     [super dealloc];
 }
 
@@ -592,7 +442,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTByteArray newWith:[self->data copy]];
+    if (![self isKindOfClass:[NBTModifiableByteArray class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTByteArray newWith:[self->data copy]];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -608,8 +465,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (instancetype)initWith:(NSData *)value
 {
-    self->data = [[NSMutableData alloc] initWithData:value];
+    self->data = [NSMutableData dataWithData:value];
     return self;
+}
+
+- (void)dealloc
+{
+    [self->data release];
+    [super dealloc];
 }
 
 - (void)setData:(NSData *)value
@@ -628,21 +491,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     NSString * _Nonnull data;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(NSString *)value
 {
     return [[self alloc] initWith:value];
@@ -656,8 +504,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (void)dealloc
 {
-    free(self);
-    return;
+    [self->data release];
     [super dealloc];
 }
 
@@ -668,7 +515,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [NBTString newWith:self->data];
+    if (![self isKindOfClass:[NBTModifiableString class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTString newWith:[self->data copy]];
+    }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -688,6 +542,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     return self;
 }
 
+- (void)dealloc
+{
+    [self->data release];
+    [super dealloc];
+}
+
 - (void)setValue:(NSString *)value
 {
     [self initWith:value];
@@ -705,21 +565,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     NSArray<NBTBaseTag *> * _Nonnull data;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(NSArray<NBTBaseTag *> *)value
 {
     // we are not doing the copy here because Mutable variant would copy,
@@ -730,9 +575,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 - (instancetype)initWith:(NSArray<NBTBaseTag *> *)value
 {
     self->type = [NBTList validateArray:value];
-    self->data = [[NSArray alloc] initWithArray:value
-                                      copyItems:NO];
-    // TODO: implementing NSCopying on NBTBaseTag, which somehow not implemented
+    self->data = value;
     return self;
 }
 
@@ -774,8 +617,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (void)dealloc
 {
-    free(self);
-    return;
+    [self->data release];
     [super dealloc];
 }
 
@@ -787,6 +629,24 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 - (Class)type
 {
     return self->type;
+}
+
+- (id)copyWithZone:(NSZone *)zone
+{
+    if (![self isKindOfClass:[NBTModifiableList class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTList newWith:[[NSArray init] initWithArray:self->data
+                                                    copyItems:YES]];
+    }
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone
+{
+    return [NBTModifiableList newWith:[self->data retain]];
 }
 
 @end
@@ -809,7 +669,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     self->data = [[NSMutableArray alloc] initWithObjects:elements
                                                    count:[value count]];
     free(elements);
+    [value release]; // following Apple's convention, init take ownership
     return self;
+}
+
+- (void)dealloc
+{
+    [self->data release];
+    [super dealloc];
 }
 
 - (void)setValue:(NSArray<NBTBaseTag *> *)value
@@ -828,21 +695,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     NSDictionary<NSString *, NBTBaseTag *> * _Nonnull data;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(NSDictionary<NSString *, NBTBaseTag *> *)value
 {
     return [[self alloc] initWith:value];
@@ -850,20 +702,37 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 - (instancetype)initWith:(NSDictionary<NSString *, NBTBaseTag *> *)value
 {
-    self->data = [value copy];
+    self->data = value;
     return self;
 }
 
 - (void)dealloc
 {
-    free(self);
-    return;
+    [self->data release];
     [super dealloc];
 }
 
 - (NSDictionary<NSString *,NBTBaseTag *> *)value
 {
     return self->data;
+}
+
+- (id)copyWithZone:(NSZone *)zone
+{
+    if (![self isKindOfClass:[NBTModifiableCompound class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        return [NBTCompound newWith:[[NSDictionary alloc] initWithDictionary:self->data
+                                                                   copyItems:YES]];
+    }
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone
+{
+    return [NBTModifiableCompound newWith:[self->data retain]];
 }
 
 @end
@@ -882,10 +751,17 @@ __IMPL_TEST(isLongArray, NBTLongArray)
         self->data[i] = [value[i] mutableCopy];
     }
     
+    [value release];
     return self;
 }
 
-- (void)setValue:(NSDictionary<NSString *,NBTBaseTag *> *)value
+- (void)dealloc
+{
+    [self->data release];
+    [super dealloc];
+}
+
+- (void)setValue:(NSDictionary<NSString *, NBTBaseTag *> *)value
 {
     [self setValue:value];
 }
@@ -900,21 +776,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 @implementation NBTIntArray {
     @protected int32_t * _Nullable data;
     @protected uintptr_t len;
-}
-
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
 }
 
 + (instancetype)newWith:(const int32_t *)data
@@ -955,8 +816,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
         free(self->data);
     }
     
-    free(self);
-    return;
     [super dealloc];
 }
 
@@ -968,6 +827,26 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 - (uintptr_t)len
 {
     return len;
+}
+
+- (id)copyWithZone:(NSZone *)zone
+{
+    if (![self isKindOfClass:[NBTModifiableIntArray class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        // coping buffer
+        return [NBTIntArray newWith:self->data
+                                len:self->len];
+    }
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone
+{
+    return [NBTModifiableIntArray newWith:self->data
+                                      len:self->len];
 }
 
 @end
@@ -1097,21 +976,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     @protected uintptr_t len;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone
-{
-    id value = malloc(class_getInstanceSize(self));
-    
-    if (!value)
-    {
-        @throw [NSException exceptionWithName:NSMallocException
-                                       reason:nil
-                                     userInfo:nil];
-    }
-    
-    *(Class *)value = self;
-    return value;
-}
-
 + (instancetype)newWith:(const int64_t *)data
                     len:(uintptr_t)len
 {
@@ -1150,8 +1014,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
         free(self->data);
     }
     
-    free(self);
-    return;
     [super dealloc];
 }
 
@@ -1163,6 +1025,26 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 - (uintptr_t)len
 {
     return len;
+}
+
+- (id)copyWithZone:(NSZone *)zone
+{
+    if (![self isKindOfClass:[NBTModifiableLongArray class]])
+    {
+        return [self retain];
+    }
+    else
+    {
+        // coping buffer
+        return [NBTLongArray newWith:self->data
+                                 len:self->len];
+    }
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone
+{
+    return [NBTModifiableLongArray newWith:self->data
+                                       len:self->len];
 }
 
 @end

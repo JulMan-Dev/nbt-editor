@@ -12,11 +12,9 @@
 
 @interface NBTBinaryParser : NSObject
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nonnull NSData *)data;
 
 - (nonnull instancetype)initWith:(nonnull NSData *)data;
-- (void)dealloc;
 - (nonnull NSData *)data;
 - (uintptr_t)start;
 - (nullable NBTByte *)takeByte:(BOOL)root;
@@ -40,7 +38,6 @@
 // note that NSCopying and NSMutableCopying share the same implementation as the type
 // is inherently mutable.
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nonnull NSData *)data;
 + (nonnull instancetype)newWithMutable:(nonnull NSMutableData *)data;
 
@@ -102,11 +99,9 @@
 
 @interface NBTByte : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(int8_t)value;
 
 - (nonnull instancetype)initWith:(int8_t)value;
-- (void)dealloc;
 - (int8_t)value;
 
 @end
@@ -123,11 +118,9 @@
 
 @interface NBTShort : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(int16_t)value;
 
 - (nonnull instancetype)initWith:(int16_t)value;
-- (void)dealloc;
 - (int16_t)value;
 
 @end
@@ -144,11 +137,9 @@
 
 @interface NBTInt : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(int32_t)value;
 
 - (nonnull instancetype)initWith:(int32_t)value;
-- (void)dealloc;
 - (int32_t)value;
 
 @end
@@ -165,11 +156,9 @@
 
 @interface NBTLong : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(int64_t)value;
 
 - (nonnull instancetype)initWith:(int64_t)value;
-- (void)dealloc;
 - (int64_t)value;
 
 @end
@@ -186,11 +175,9 @@
 
 @interface NBTFloat : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(float)value;
 
 - (nonnull instancetype)initWith:(float)value;
-- (void)dealloc;
 - (float)value;
 
 @end
@@ -207,11 +194,9 @@
 
 @interface NBTDouble : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(double)value;
 
 - (nonnull instancetype)initWith:(double)value;
-- (void)dealloc;
 - (double)value;
 
 @end
@@ -228,11 +213,9 @@
 
 @interface NBTByteArray : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nonnull NSData *)value;
 
 - (nonnull instancetype)initWith:(nonnull NSData *)value;
-- (void)dealloc;
 - (nonnull NSData *)data;
 
 @end
@@ -250,11 +233,9 @@
 
 @interface NBTString : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nonnull NSString *)value;
 
 - (nonnull instancetype)initWith:(nonnull NSString *)value;
-- (void)dealloc;
 - (nonnull NSString *)value;
 
 @end
@@ -272,11 +253,9 @@
 
 @interface NBTList : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nonnull NSArray<NBTBaseTag *> *)value;
 
 - (nonnull instancetype)initWith:(nonnull NSArray<NBTBaseTag *> *)value;
-- (void)dealloc;
 - (nonnull NSArray<NBTBaseTag *> *)value;
 - (nullable Class)type;
 
@@ -295,11 +274,9 @@
 
 @interface NBTCompound : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nonnull NSDictionary<NSString *, NBTBaseTag *> *)value;
 
 - (nonnull instancetype)initWith:(nonnull NSDictionary<NSString *, NBTBaseTag *> *)value;
-- (void)dealloc;
 - (nonnull NSDictionary<NSString *, NBTBaseTag *> *)value;
 
 @end
@@ -317,13 +294,11 @@
 
 @interface NBTIntArray : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nullable const int32_t *)data
                             len:(uintptr_t)len;
 
 - (nonnull instancetype)initWith:(nullable const int32_t *)data
                              len:(uintptr_t)len;
-- (void)dealloc;
 - (nullable const int32_t *)ptr;
 - (uintptr_t)len;
 
@@ -353,13 +328,11 @@
 
 @interface NBTLongArray : NBTBaseTag
 
-+ (nonnull instancetype)allocWithZone:(null_unspecified struct _NSZone *)zone;
 + (nonnull instancetype)newWith:(nullable const int64_t *)data
                             len:(uintptr_t)len;
 
 - (nonnull instancetype)initWith:(nullable const int64_t *)data
                              len:(uintptr_t)len;
-- (void)dealloc;
 - (nullable const int64_t *)ptr;
 - (uintptr_t)len;
 

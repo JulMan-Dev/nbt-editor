@@ -125,7 +125,7 @@ unsafe fn rust_double(v: *mut AnyObject) -> f64 {
 fn objc_byte_array(data: &[u8]) -> Retained<AnyObject> {
     let ns_data = NSData::with_bytes(data);
     // SAFETY: +newWith: is implemented on NBTByteArray
-    unsafe { msg_send![*OBJC_NBT_BYTE_ARRAY, newWith:Retained::as_ptr(&ns_data)] }
+    unsafe { msg_send![*OBJC_NBT_BYTE_ARRAY, newWith:Retained::into_raw(ns_data)] }
 }
 
 /// # Safety
@@ -156,7 +156,7 @@ unsafe fn rust_byte_array(v: *mut AnyObject) -> ByteArray {
 fn objc_string(s: &str) -> Retained<AnyObject> {
     let ns_string = NSString::from_str(s);
     // SAFETY: +newWith: is implemented on NBTString
-    unsafe { msg_send![*OBJC_NBT_STRING, newWith:Retained::as_ptr(&ns_string)] }
+    unsafe { msg_send![*OBJC_NBT_STRING, newWith:Retained::into_raw(ns_string)] }
 }
 
 /// # Safety
@@ -195,7 +195,7 @@ fn objc_list(list: List) -> Retained<AnyObject> {
 
     let array_ptr = NSArray::from_retained_slice(&items);
     // SAFETY: NBTList implements +newWith:
-    unsafe { msg_send![*OBJC_NBT_LIST, newWith:Retained::as_ptr(&array_ptr)] }
+    unsafe { msg_send![*OBJC_NBT_LIST, newWith:Retained::into_raw(array_ptr)] }
 }
 
 /// # Safety
@@ -274,7 +274,7 @@ fn objc_compound(compound: Compound) -> Retained<AnyObject> {
 
     let ns_dict = NSDictionary::from_retained_objects(keys_slice, &values);
     // SAFETY: +newWith is implemented on NBTCompound
-    unsafe { msg_send![*OBJC_NBT_COMPOUND, newWith:Retained::as_ptr(&ns_dict)] }
+    unsafe { msg_send![*OBJC_NBT_COMPOUND, newWith:Retained::into_raw(ns_dict)] }
 }
 
 /// # Safety
