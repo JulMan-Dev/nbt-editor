@@ -30,6 +30,7 @@
 - (nullable NBTIntArray *)takeIntArray:(BOOL)root;
 - (nullable NBTLongArray *)takeLongArray:(BOOL)root;
 - (nullable NBTBaseTag *)takeTag:(BOOL)root;
+- (nullable NBTBaseTag *)takeCompressedTag:(BOOL)root;
 
 @end
 

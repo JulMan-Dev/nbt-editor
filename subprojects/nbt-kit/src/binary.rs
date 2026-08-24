@@ -62,6 +62,7 @@ impl TagProducer for BinaryParser<'_> {
             10 => self.take_compound(root).map(Tag::Compound),
             11 => self.take_int_array(root).map(Tag::IntArray),
             12 => self.take_long_array(root).map(Tag::LongArray),
+            _ if root => None,
             _ => panic!("unsupported tag type"),
         }
     }

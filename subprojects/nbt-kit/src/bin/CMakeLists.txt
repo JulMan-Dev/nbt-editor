@@ -1,3 +1,4 @@
 target_sources(rust_sources INTERFACE
-    debug-nbt.rs
+        debug-compressed-nbt.rs
+        debug-nbt.rs
 )

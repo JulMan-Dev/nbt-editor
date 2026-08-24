@@ -600,12 +600,13 @@ unsafe fn load_objc_classes() {
             impl_binding!(this => |mut parser| Some(objc_tag(parser.take_tag(root)?)))
         }
 
-        // TODO: write Objective-C binding for parser.take_compressed_tag
+        (takeCompressedTag:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_tag(parser.take_compressed_tag(root)?)))
+        }
 
         (writeByte:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
             impl_write!(this => |serializer| serializer.write_byte(unsafe { rust_byte(value) }));
         }
-
         (writeShort:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
             impl_write!(this => |serializer| serializer.write_short(unsafe { rust_short(value) }));
         }

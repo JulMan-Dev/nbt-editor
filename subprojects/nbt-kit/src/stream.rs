@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::io::Read;
 use std::iter::repeat_with;
-use flate2::read::DeflateDecoder;
+use flate2::read::GzDecoder;
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
 use crate::traits::*;
 
@@ -32,12 +32,13 @@ impl<T: Read> TagProducer for NbtReader<T> {
             10 => self.take_compound(root).map(Tag::Compound),
             11 => self.take_int_array(root).map(Tag::IntArray),
             12 => self.take_long_array(root).map(Tag::LongArray),
+            _ if root => None,
             _ => panic!("unsupported tag type"),
         }
     }
 
     fn take_compressed_tag(&mut self, root: bool) -> Option<Tag> {
-        let mut reader = NbtReader::new(DeflateDecoder::new(&mut self.inner));
+        let mut reader = NbtReader::new(GzDecoder::new(&mut self.inner));
         reader.take_tag(root)
     }
 }

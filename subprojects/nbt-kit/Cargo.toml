@@ -9,6 +9,9 @@ crate-type = ["staticlib", "lib"]
 [[bin]]
 name = "debug-nbt"
 
+[[bin]]
+name = "debug-compressed-nbt"
+
 [features]
 default = []
 objc = ["dep:objc2", "dep:objc2-foundation", "dep:ctor"]
