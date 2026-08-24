@@ -2,21 +2,21 @@
 #import "controller.h"
 
 @implementation NBTDocument {
-    NBTBaseTag *tag;
+    NBTBaseTag *_tag;
 }
 
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        self->tag = nil;
+        self->_tag = nil;
     }
     return self;
 }
 
 - (NBTBaseTag *)tag
 {
-    return self->tag;
+    return self->_tag;
 }
 
 + (BOOL)autosavesInPlace
@@ -42,7 +42,7 @@
                  error:(NSError * _Nullable *)outError
 {
     NBTBinarySerializer *serializer = [NBTBinarySerializer newWithMutable:[NSMutableData data]];
-    [serializer writeTag:self->tag];
+    [serializer writeTag:self->_tag];
     NSData *data = [serializer mutableData];
     // mutableData so we borrow out the internal buffer of the serializer, avoiding to allocate a new buffer
     
@@ -64,7 +64,7 @@
         return NO;
     }
     
-    self->tag = tag;
+    self->_tag = tag;
     return YES;
 }
 

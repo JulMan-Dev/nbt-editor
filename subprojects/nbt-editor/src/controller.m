@@ -47,18 +47,18 @@
 @end
 
 @implementation NBTWindowController {
-    NBTDocument *document;
+    NBTDocument *_document;
     // this is linked to the document but a state of it, it is a view state
-    NBTCollectionWrapper *wrapper;
+    NBTCollectionWrapper *_wrapper;
 }
 
 - (void)setDocument:(id)document
 {
     if ([document isKindOfClass:[NBTDocument class]])
     {
-        self->document = document;
-        self->wrapper = [NBTCollectionWrapper wrapperWithTag:[self->document tag]
-                                                      parent:nil];
+        self->_document = document;
+        self->_wrapper = [NBTCollectionWrapper wrapperWithTag:[self->_document tag]
+                                                       parent:nil];
     }
 }
 
@@ -104,10 +104,10 @@
     [mainCol setTitle:@"Value"];
     [mainView addTableColumn:col];
     
-    if (self->wrapper)
+    if (self->_wrapper)
     {
-        [mainView setDataSource:self->wrapper];
-        [mainView setDelegate:self->wrapper];
+        [mainView setDataSource:self->_wrapper];
+        [mainView setDelegate:self->_wrapper];
         [mainView reloadData];
     }
     else
