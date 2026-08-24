@@ -30,7 +30,7 @@ endif ()
 add_custom_command(
         COMMENT "Building Rust crate nbt_kit"
         OUTPUT "${GENERATED_LIB}"
-        COMMAND cmake -E env "RUSTC=${RUST_RUSTC}"
+        COMMAND "${CMAKE_COMMAND}" -E env "RUSTC=${RUST_RUSTC}"
                 "${RUST_RUSTUP}" run nightly cargo -Z unstable-options build
                         -F objc ${CARGO_RELEASE_FLAG} --artifact-dir "${GENERATED_DIR}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
