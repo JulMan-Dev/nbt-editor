@@ -507,300 +507,151 @@ unsafe fn load_objc_classes() {
         }};
     }
 
-    let encoding = c"@@:B";
+    macro_rules! objc_binding {
+        () => {};
+        (($($sel:tt)*), $encoding:expr, |$($name:ident: $ty:ty),+| -> $rt:ty { $($expr:tt)* } $($tt:tt)*) => {
+            unsafe {
+                let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!($($sel)*), {
+                    extern "C-unwind" fn inner($($name: $ty),+) -> $rt {
+                        $($expr)*
+                    }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByte:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_byte(parser.take_byte(root)?)))
+                    mem::transmute(inner as extern "C-unwind" fn (_, _, _) -> _)
+                }, $encoding).as_bool();
+                assert!(is_ok);
             }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
+            objc_binding! { $($tt)* }
+        };
+        (($($sel:tt)*), $encoding:expr, |$($name:ident: $ty:ty),+| { $($expr:tt)* } $($tt:tt)*) => {
+            unsafe {
+                let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!($($sel)*), {
+                    extern "C-unwind" fn inner($($name: $ty),+) {
+                        $($expr)*
+                    }
+
+                    mem::transmute(inner as extern "C-unwind" fn (_, _, _))
+                }, $encoding).as_bool();
+                assert!(is_ok);
+            }
+
+            objc_binding! { $($tt)* }
+        };
     }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeShort:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_short(parser.take_short(root)?)))
-            }
+    let encoding = c"@@:B".as_ptr();
+    let write_encoding = c"v@:@".as_ptr();
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+    objc_binding! {
+        (takeByte:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_byte(parser.take_byte(root)?)))
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeInt:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_int(parser.take_int(root)?)))
-            }
+        (takeShort:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_short(parser.take_short(root)?)))
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (takeInt:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_int(parser.take_int(root)?)))
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLong:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_long(parser.take_long(root)?)))
-            }
+        (takeLong:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_long(parser.take_long(root)?)))
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (takeFloat:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_float(parser.take_float(root)?)))
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeFloat:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_float(parser.take_float(root)?)))
-            }
+        (takeDouble:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_double(parser.take_double(root)?)))
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (takeByteArray:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| {
+                let value = parser.take_byte_array(root)?;
+                // SAFETY: i8 and u8 are the same
+                let bytes: Box<[u8]> = unsafe { mem::transmute(value.into_inner()) };
+                Some(objc_byte_array(&bytes))
+            })
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeDouble:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_double(parser.take_double(root)?)))
-            }
+        (takeString:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_string(&parser.take_string(root)?)))
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (takeList:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_list(parser.take_list(root)?)))
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeByteArray:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| {
-                    let value = parser.take_byte_array(root)?;
-                    // SAFETY: i8 and u8 are the same
-                    let bytes: Box<[u8]> = unsafe { mem::transmute(value.into_inner()) };
-                    Some(objc_byte_array(&bytes))
-                })
-            }
+        (takeCompound:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_compound(parser.take_compound(root)?)))
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (takeIntArray:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_int_array(&**parser.take_int_array(root)?)))
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeString:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_string(&parser.take_string(root)?)))
-            }
+        (takeLongArray:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_long_array(&**parser.take_long_array(root)?)))
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (takeTag:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
+            impl_binding!(this => |mut parser| Some(objc_tag(parser.take_tag(root)?)))
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeList:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_list(parser.take_list(root)?)))
-            }
+        // TODO: write Objective-C binding for parser.take_compressed_tag
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (writeByte:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_byte(unsafe { rust_byte(value) }));
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeCompound:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_compound(parser.take_compound(root)?)))
-            }
+        (writeShort:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_short(unsafe { rust_short(value) }));
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (writeInt:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_int(unsafe { rust_int(value) }));
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeIntArray:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_int_array(&**parser.take_int_array(root)?)))
-            }
+        (writeLong:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_long(unsafe { rust_long(value) }));
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (writeFloat:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_float(unsafe { rust_float(value) }));
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeLongArray:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_long_array(&**parser.take_long_array(root)?)))
-            }
+        (writeDouble:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_double(unsafe { rust_double(value) }));
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (writeByteArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_byte_array(unsafe { rust_byte_array(value) }));
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_PARSER).cast_mut(), sel!(takeTag:), {
-            extern "C-unwind" fn take(this: *mut AnyObject, _cmd: Sel, root: bool) -> Option<Retained<AnyObject>> {
-                impl_binding!(this => |mut parser| Some(objc_tag(parser.take_tag(root)?)))
-            }
+        (writeString:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_string(unsafe { rust_string(value) }));
+        }
 
-            mem::transmute(take as extern "C-unwind" fn (_, _, _) -> _)
-        }, encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
+        (writeList:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_list(unsafe { rust_list(value) }));
+        }
 
-    // TODO: write Objective-C binding for parser.take_compressed_tag
+        (writeCompound:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_compound(unsafe { rust_compound(value) }));
+        }
 
-    let write_encoding = c"v@:@";
+        (writeIntArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_int_array(unsafe { rust_int_array(value) }));
+        }
 
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeByte:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_byte(unsafe { rust_byte(value) }));
-            }
+        (writeLongArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_long_array(unsafe { rust_long_array(value) }));
+        }
 
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeShort:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_short(unsafe { rust_short(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeInt:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_int(unsafe { rust_int(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeLong:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_long(unsafe { rust_long(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeFloat:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_float(unsafe { rust_float(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeDouble:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_double(unsafe { rust_double(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeByteArray:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_byte_array(unsafe { rust_byte_array(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeString:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_string(unsafe { rust_string(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeList:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_list(unsafe { rust_list(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeCompound:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_compound(unsafe { rust_compound(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeIntArray:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_int_array(unsafe { rust_int_array(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeLongArray:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_long_array(unsafe { rust_long_array(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
-    }
-
-    unsafe {
-        let is_ok = class_addMethod(ptr::from_ref(*OBJC_NBT_SERIALIZER).cast_mut(), sel!(writeTag:), {
-            extern "C-unwind" fn write(this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject) {
-                impl_write!(this => |serializer| serializer.write_tag(unsafe { rust_tag(value) }));
-            }
-
-            mem::transmute(write as extern "C-unwind" fn (_, _, _))
-        }, write_encoding.as_ptr()).as_bool();
-        assert!(is_ok);
+        (writeTag:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
+            impl_write!(this => |serializer| serializer.write_tag(unsafe { rust_tag(value) }));
+        }
     }
 }
