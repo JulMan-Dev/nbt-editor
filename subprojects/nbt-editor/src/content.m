@@ -6,6 +6,15 @@
     BOOL _compressed;
 }
 
++ (instancetype)fromTag:(NBTBaseTag *)tag
+             compressed:(BOOL)compressed
+{
+    NBTDocument *document = [self new];
+    document->_tag = tag;
+    document->_compressed = compressed;
+    return document;
+}
+
 - (instancetype)init
 {
     self = [super init];
@@ -91,14 +100,14 @@
 }
 
 + (instancetype)wrapperWithTag:(NBTBaseTag *)tag
-                        parent:(NBTCollectionWrapper *)parent
+                        parent:(__weak NBTCollectionWrapper *)parent
 {
     return [[self alloc] initWithTag:tag
                               parent:parent];
 }
 
 - (instancetype)initWithTag:(NBTBaseTag *)t
-                     parent:(NBTCollectionWrapper *)parent
+                     parent:(__weak NBTCollectionWrapper *)parent
 {
     self->_tag = t;
     self->_parent = parent;
@@ -155,13 +164,12 @@
 {
     if (item)
     {
-        NBTCollectionWrapper *it = item;
-        
-        return [it outlineView:outlineView
-        numberOfChildrenOfItem:nil];
+        return [((NBTCollectionWrapper *)item)->_children count];
     }
-    
-    return [self->_children count];
+    else
+    {
+        return 1;
+    }
 }
 
 - (id)outlineView:(NSOutlineView *)outlineView
@@ -172,17 +180,21 @@
     {
         NBTCollectionWrapper *it = item;
         
-        return [it outlineView:outlineView
-                         child:index
-                        ofItem:nil];
+        if (index >= [it->_children count])
+        {
+            return nil;
+        }
+        
+        return it->_children[index];
     }
-    
-    if (index >= [self->_children count])
+    else if (index == 0)
+    {
+        return self;
+    }
+    else
     {
         return nil;
     }
-    
-    return self->_children[index];
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView
@@ -197,7 +209,7 @@
 objectValueForTableColumn:(NSTableColumn *)tableColumn
            byItem:(id)item
 {
-    if (!tableColumn || !item)
+    if (!tableColumn)
     {
         return nil;
     }
@@ -205,26 +217,16 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     NBTCollectionWrapper *this = item;
     NSString *columnId = [tableColumn identifier];
     
-    NSCell *cell = nil;
-
-    if ([columnId isEqual:@"NBTKey"])
-    {
-        cell = [self keyStringForWrapper:this];
-    }
-    else if ([columnId isEqual:@"NBTValue"])
-    {
-        cell = [self valueStringForWrapper:this];
-    }
-    else
-    {
-        return nil;
-    }
+    NSString *key = [self keyStringForWrapper:this ?: self];
+    NSString *value = [self valueStringForWrapper:this ?: self];
     
+    NSCell *cell = [[NSCell alloc] initTextCell:key ? [NSString stringWithFormat:@"%@: %@", key, value] : value];
     [cell setWraps:NO];
+    [cell setFont:[NSFont labelFontOfSize:[NSFont systemFontSize]]];
     return cell;
 }
 
-- (NSCell *)keyStringForWrapper:(NBTCollectionWrapper *)this
+- (NSString *)keyStringForWrapper:(NBTCollectionWrapper *)this
 {
     // getting parent for acquiring the associated key
     if (!this->_parent)
@@ -243,7 +245,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
             // only testing against the point is fine
             if (entries[key] == this->_tag)
             {
-                return [[NSCell alloc] initTextCell:key];
+                return key;
             }
         }
     }
@@ -255,7 +257,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         {
             if (entries[i] == this->_tag)
             {
-                return [[NSCell alloc] initTextCell:[NSString stringWithFormat:@"%ld", i]];
+                return [NSString stringWithFormat:@"%ld", i];
             }
         }
     }
@@ -270,7 +272,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                                  userInfo:nil];
 }
 
-- (NSCell *)valueStringForWrapper:(NBTCollectionWrapper *)this
+- (NSString *)valueStringForWrapper:(NBTCollectionWrapper *)this
 {
     NBTBaseTag *tag = this->_tag;
     NSString *value = nil;
@@ -314,7 +316,13 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                                      userInfo:nil];
     }
     
-    return [[NSCell alloc] initTextCell:value];
+    return value;
+}
+
+- (CGFloat)outlineView:(NSOutlineView *)outlineView
+     heightOfRowByItem:(id)item
+{
+    return [NSFont systemFontSize] + 4.0;
 }
 
 - (NSCell *)outlineView:(NSOutlineView *)outlineView
