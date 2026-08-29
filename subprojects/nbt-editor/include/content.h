@@ -13,6 +13,9 @@
 
 @end
 
+@interface RegionDocument : NSDocument
+@end
+
 @interface NBTCollectionWrapper : NSObject <NSOutlineViewDataSource, NSOutlineViewDelegate, NSCopying, NSMutableCopying>
 
 + (nonnull instancetype)wrapperWithTag:(nullable NBTBaseTag *)tag

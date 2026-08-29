@@ -93,6 +93,20 @@
 
 @end
 
+@implementation RegionDocument
+
+- (BOOL)readFromData:(NSData *)data
+              ofType:(NSString *)typeName
+               error:(NSError *__autoreleasing _Nullable *)outError
+{
+    *outError = [NSError errorWithDomain:NSCocoaErrorDomain
+                                    code:NSFileReadUnsupportedSchemeError
+                                userInfo:nil];
+  return NO;
+}
+
+@end
+
 @implementation NBTCollectionWrapper {
     NBTBaseTag *_Nullable _tag;
     __weak NBTCollectionWrapper *_Nullable _parent;
