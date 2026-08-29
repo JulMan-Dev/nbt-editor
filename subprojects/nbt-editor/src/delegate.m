@@ -14,10 +14,10 @@
 {
     // making the menu
     NSMenu *mainMenu = [NSMenu new];
-    
+
     // Application menu
     NSString *appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleExecutable"];
-    
+
     NSMenu *appMenu = [[NSMenu alloc] initWithTitle:[appName copy]];
 
     [appMenu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName]
@@ -36,16 +36,16 @@
 
     [appMenuItem setSubmenu:appMenu];
     [mainMenu addItem:appMenuItem];
-    
+
     // File submenu
     NSMenu *fileMenu = [[NSMenu alloc] initWithTitle:@"File"];
-    
+
     NSMenuItem *newItem = [[NSMenuItem alloc] initWithTitle:@"New"
                                                       action:@selector(newDocument:)
                                                keyEquivalent:@"n"];
     newItem.target = nil;
     [fileMenu addItem:newItem];
-    
+
     NSMenuItem *openItem = [[NSMenuItem alloc] initWithTitle:@"Open…"
                                                        action:@selector(openDocument:)
                                                 keyEquivalent:@"o"];
@@ -64,13 +64,13 @@
     saveAsItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagShift;
     saveAsItem.target = nil;
     [fileMenu addItem:saveAsItem];
-    
+
     NSMenuItem *fileItemMenu = [[NSMenuItem alloc] initWithTitle:@"File"
                                                           action:nil
                                                    keyEquivalent:@""];
     [fileItemMenu setSubmenu:fileMenu];
     [mainMenu addItem:fileItemMenu];
-    
+
     [[NSApplication sharedApplication] setMainMenu:mainMenu];
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 }

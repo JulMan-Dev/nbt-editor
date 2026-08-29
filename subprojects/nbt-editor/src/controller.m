@@ -6,12 +6,12 @@
 + (NBTDocumentController *)sharedDocumentController
 {
     static NBTDocumentController *INSTANCE = nil;
-    
+
     if (!INSTANCE)
     {
         INSTANCE = [NBTDocumentController new];
     }
-    
+
     return INSTANCE;
 }
 
@@ -40,7 +40,7 @@
                                     userInfo:nil];
         return nil;
     }
-    
+
     return [NBTDocument new];
 }
 
@@ -68,7 +68,7 @@
     {
         return;
     }
-    
+
     NSRect frame = NSMakeRect(0, 0, 800, 600);
     NSWindow *window = [[NSWindow alloc] initWithContentRect:frame
                                                    styleMask:(NSWindowStyleMaskTitled |
@@ -83,10 +83,10 @@
 
     [self setWindow:window];
     [window center];
-    
+
     NSView *contentView = [[NSView alloc] initWithFrame:frame];
     [window setContentView:contentView];
-    
+
     [self windowDidLoad];
 }
 
@@ -95,12 +95,12 @@
     NSWindow *window = [self window];
     NSOutlineView *mainView = [[NSOutlineView alloc] initWithFrame:[window frame]];
     [mainView setHeaderView:nil];
-    
+
     NSTableColumn *mainCol = [[NSTableColumn alloc] initWithIdentifier:@"NBTKey"];
     [mainCol setTitle:@"Value"];
     [mainView addTableColumn:mainCol];
     [mainView setOutlineTableColumn:mainCol];
-    
+
     if (self->_wrapper)
     {
         [mainView setDataSource:self->_wrapper];
@@ -111,19 +111,19 @@
     {
         NSLog(@"may not set NSOutlineView dataSource, wrapper is (null)");
     }
-    
+
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:[[window contentView] bounds]];
     [scrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [scrollView setHasVerticalScroller:YES];
     [scrollView setDocumentView:mainView];
     [[window contentView] addSubview:scrollView];
-    
+
     [mainView setColumnAutoresizingStyle:NSTableViewUniformColumnAutoresizingStyle];
-    
+
     [mainCol setResizingMask:NSTableColumnAutoresizingMask];
     [mainCol setMinWidth:50.0];
     [mainCol setMaxWidth:CGFLOAT_MAX];
-    
+
     NSView *contentView = [window contentView];
     [NSLayoutConstraint activateConstraints:@[
         [[scrollView topAnchor] constraintEqualToAnchor:[contentView topAnchor]],
@@ -131,7 +131,7 @@
         [[scrollView leadingAnchor] constraintEqualToAnchor:[contentView leadingAnchor]],
         [[scrollView trailingAnchor] constraintEqualToAnchor:[contentView trailingAnchor]],
     ]];
-    
+
     [contentView layoutSubtreeIfNeeded];
     [mainView sizeLastColumnToFit];
     [mainView expandItem:nil];
@@ -140,7 +140,7 @@
 - (void)windowDidLoad
 {
     NSURL *fileUrl = [self->_document fileURL];
-    
+
     if (fileUrl)
     {
         [[self window] setTitleWithRepresentedFilename:[fileUrl path]];
@@ -149,13 +149,13 @@
     else
     {
         NewDocumentSheetController *controller = [NewDocumentSheetController new];
-        
+
         [[self window] beginSheet:[controller window]
                 completionHandler:^(NSModalResponse returnCode) {
             if (returnCode == NSModalResponseOK)
             {
                 NBTBaseTag *tag = [[[controller type] new] mutableCopy];
-                    
+
                 [self setDocument:[NBTDocument fromTag:tag
                                             compressed:[controller compressed]]];
                 [self initOutlineView];
@@ -180,27 +180,27 @@
 {
     self->_type = NULL;
     self->_compressed = NO;
-    
+
     NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 300, 170)
                                                    styleMask:NSWindowStyleMaskTitled
                                                      backing:NSBackingStoreBuffered
                                                        defer:NO];
-    
+
     NSStackView *mainView = [NSStackView new];
     [window setContentView:mainView];
     [mainView setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [mainView setAlignment:NSLayoutAttributeLeft];
     [mainView setDistribution:NSStackViewDistributionEqualSpacing];
     [mainView setEdgeInsets:NSEdgeInsetsMake(16.0, 16.0, 16.0, 16.0)];
-    
+
     NSStackView *optionsView = [NSStackView new];
     [mainView addArrangedSubview:optionsView];
     [optionsView setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [optionsView setAlignment:NSLayoutAttributeLeft];
     [optionsView setSpacing:8.0];
-    
+
     [self _makeOptionsViewIn:optionsView];
-    
+
     NSButton *cancelButton = [NSButton buttonWithTitle:@"Cancel"
                                                 target:self
                                                 action:@selector(clickedCancel:)];
@@ -213,17 +213,17 @@
     // by default the confirm button is disabled because the configuration is invalid by default
     NSStackView *buttonsView = [NSStackView stackViewWithViews:@[cancelButton, self->_confirmButton]];
     [mainView addArrangedSubview:buttonsView];
-    
+
     return (self = [self initWithWindow:window]);
 }
 
 - (void)_makeOptionsViewIn:(NSStackView *)mainView;
 {
     [mainView addArrangedSubview:[NSTextField labelWithString:@"Tag Type"]];
-    
+
     NSView *box = [NSView new];
     [mainView addArrangedSubview:box];
-    
+
     NSStackView *typeStackView = [NSStackView stackViewWithViews:@[
         [NSButton radioButtonWithTitle:@"Compound"
                                 target:self
@@ -235,7 +235,7 @@
     [typeStackView setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [typeStackView setAlignment:NSLayoutAttributeLeft];
     [typeStackView setTranslatesAutoresizingMaskIntoConstraints:NO];
-    
+
     [box addSubview:typeStackView];
     [NSLayoutConstraint activateConstraints:@[
         [[typeStackView leadingAnchor] constraintEqualToAnchor:[box leadingAnchor]],
@@ -245,7 +245,7 @@
         [[box leadingAnchor] constraintEqualToAnchor:[mainView leadingAnchor]
                                             constant:8.0],
     ]];
-    
+
     NSButton *checkbox = [NSButton checkboxWithTitle:@"Compressed"
                                               target:self
                                               action:@selector(selectedCompressed:)];

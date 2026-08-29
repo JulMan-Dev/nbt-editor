@@ -1,11 +1,11 @@
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
+use crate::stream::NbtReader;
 use crate::traits::*;
 use alloc::borrow::ToOwned;
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 use core::ops::Deref;
-use crate::stream::NbtReader;
 
 #[derive(Debug, Clone)]
 #[repr(transparent)]
@@ -42,8 +42,6 @@ impl<'a> BinaryParser<'a> {
     }
 }
 
-// We need to implement to &mut BinaryParser as we could update the reference, which need pointer to
-// reference.
 impl TagProducer for BinaryParser<'_> {
     fn take_tag(&mut self, root: bool) -> Option<Tag> {
         let byte = self.inner.first()?;

@@ -607,6 +607,7 @@ unsafe fn load_objc_classes() {
         (writeByte:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
             impl_write!(this => |serializer| serializer.write_byte(unsafe { rust_byte(value) }));
         }
+
         (writeShort:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
             impl_write!(this => |serializer| serializer.write_short(unsafe { rust_short(value) }));
         }

@@ -61,7 +61,7 @@
     [serializer writeTag:self->_tag];
     NSData *data = [serializer mutableData];
     // mutableData so we borrow out the internal buffer of the serializer, avoiding to allocate a new buffer
-    
+
     return data;
 }
 
@@ -71,7 +71,7 @@
 {
     NBTBinaryParser *parser = [NBTBinaryParser newWith:data];
     NBTBaseTag *tag = nil;
-    
+
     if ((tag = [parser takeTag:YES]))
     {
         self->_tag = tag;
@@ -84,7 +84,7 @@
         self->_compressed = YES;
         return YES;
     }
-    
+
     *outError = [NSError errorWithDomain:NSCocoaErrorDomain
                                     code:NSFileReadCorruptFileError
                                 userInfo:nil];
@@ -136,35 +136,35 @@
         self->_children = @[];
         return;
     }
-    
+
     if ([self->_tag isList])
     {
         NBTList *list = (id)self->_tag;
-        
+
         NSArray<NBTBaseTag *> *tags = [list value];
         NSMutableArray<NBTCollectionWrapper *> *array = [NSMutableArray arrayWithCapacity:[tags count]];
-        
+
         for (NBTBaseTag *tag in tags)
         {
             [array addObject:[NBTCollectionWrapper wrapperWithTag:tag
                                                            parent:self]];
         }
-        
+
         self->_children = array;
     }
     else if ([self->_tag isCompound])
     {
         NBTCompound *compound = (id)self->_tag;
-        
+
         NSDictionary<NSString *, NBTBaseTag *> *tags = [compound value];
         NSMutableArray<NBTCollectionWrapper *> *array = [NSMutableArray arrayWithCapacity:[tags count]];
-        
+
         for (NSString *key in tags)
         {
             [array addObject:[NBTCollectionWrapper wrapperWithTag:tags[key]
                                                            parent:self]];
         }
-        
+
         self->_children = array;
     }
     else
@@ -193,12 +193,12 @@
     if (item)
     {
         NBTCollectionWrapper *it = item;
-        
+
         if (index >= [it->_children count])
         {
             return nil;
         }
-        
+
         return it->_children[index];
     }
     else if (index == 0)
@@ -215,7 +215,7 @@
    isItemExpandable:(id)item
 {
     NBTCollectionWrapper *wrapper = item;
-    
+
     return [wrapper->_tag isList] || [wrapper->_tag isCompound];
 }
 
@@ -230,10 +230,10 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 
     NBTCollectionWrapper *this = item;
     NSString *columnId = [tableColumn identifier];
-    
+
     NSString *key = [self keyStringForWrapper:this ?: self];
     NSString *value = [self valueStringForWrapper:this ?: self];
-    
+
     NSCell *cell = [[NSCell alloc] initTextCell:key ? [NSString stringWithFormat:@"%@: %@", key, value] : value];
     [cell setWraps:NO];
     [cell setFont:[NSFont labelFontOfSize:[NSFont systemFontSize]]];
@@ -247,13 +247,13 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     {
         return nil;
     }
-    
+
     NBTBaseTag *tag = this->_parent->_tag;
-    
+
     if ([tag isCompound])
     {
         NSDictionary<NSString *, NBTBaseTag *> *entries = [(NBTCompound *)tag value];
-        
+
         for (NSString *key in entries)
         {
             // only testing against the point is fine
@@ -266,7 +266,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     else if ([tag isList])
     {
         NSArray<NBTBaseTag *> *entries = [(NBTList *)tag value];
-        
+
         for (uintptr_t i = 0; i < [entries count]; i++)
         {
             if (entries[i] == this->_tag)
@@ -280,7 +280,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         // no key, no ui information
         return nil;
     }
-    
+
     @throw [NSException exceptionWithName:NSGenericException
                                    reason:[NSString stringWithFormat:@"cannot compute the key of %p", tag]
                                  userInfo:nil];
@@ -290,7 +290,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 {
     NBTBaseTag *tag = this->_tag;
     NSString *value = nil;
-    
+
     if ([tag isByte]) value = [NSString stringWithFormat:@"%d (byte)", [(NBTByte *)tag value]];
     else if ([tag isShort]) value = [NSString stringWithFormat:@"%d (short)", [(NBTShort *)tag value]];
     else if ([tag isInt]) value = [NSString stringWithFormat:@"%d (integer)", [(NBTInt *)tag value]];
@@ -329,7 +329,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                                        reason:@"unknown tag class"
                                      userInfo:nil];
     }
-    
+
     return value;
 }
 
@@ -347,7 +347,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     {
         return nil;
     }
-    
+
     return [[NSTextFieldCell alloc] initTextCell:@""];
 }
 

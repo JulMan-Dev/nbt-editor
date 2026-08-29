@@ -582,7 +582,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 + (nullable Class)validateArray:(NSArray<NBTBaseTag *> *)value
 {
     Class type = nil;
-    
+
     for (NBTBaseTag * tag in value)
     {
         if (!type)
@@ -611,7 +611,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
             return nil;
         }
     }
-    
+
     return type;
 }
 
@@ -658,14 +658,14 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 - (instancetype)initWith:(NSArray<NBTBaseTag *> *)value
 {
     self->type = [NBTList validateArray:value];
-    
+
     // coping every elements as mutable, to be fully mutable
     NBTBaseTag ** elements = calloc([value count], sizeof(id));
     for (uintptr_t i = 0; i < [value count]; i++)
     {
         elements[i] = [value[i] mutableCopy];
     }
-    
+
     self->data = [[NSMutableArray alloc] initWithObjects:elements
                                                    count:[value count]];
     free(elements);
@@ -745,12 +745,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 {
     // making a mutable deep copy
     self->data = [[NSMutableDictionary alloc] initWithCapacity:[value count]];
-    
+
     for (NSString * i in value)
     {
         self->data[i] = [value[i] mutableCopy];
     }
-    
+
     [value release];
     return self;
 }
@@ -794,7 +794,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
         self->len = l;
         return self;
     }
-    
+
     int32_t * ptr = calloc(l, sizeof(int32_t));
     if (!ptr)
     {
@@ -802,7 +802,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
                                        reason:nil
                                      userInfo:nil];
     }
-    
+
     memcpy(ptr, d, l * sizeof(int32_t));
     self->data = ptr;
     self->len = l;
@@ -815,7 +815,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     {
         free(self->data);
     }
-    
+
     [super dealloc];
 }
 
@@ -861,11 +861,11 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     {
         return;
     }
-    
+
     if (self->cap == 0 || !self->data)
     {
         self->cap = moreElements;
-        
+
         self->data = calloc(self->cap, sizeof(int32_t));
     }
     else
@@ -874,10 +874,10 @@ __IMPL_TEST(isLongArray, NBTLongArray)
         {
             self->cap *= 2;
         }
-        
+
         self->data = realloc(self->data, self->cap * sizeof(int32_t));
     }
-    
+
     if (!self->data)
     {
         @throw [NSException exceptionWithName:NSMallocException
@@ -893,12 +893,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     {
         return;
     }
-    
+
     if (self->cap < l)
     {
         [self dataAllocate:l - self->cap];
     }
-    
+
     memcpy(self->data, d, l * sizeof(int32_t));
     self->len = l;
 }
@@ -906,7 +906,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 - (void)pushOne:(int32_t)value
 {
     [self dataAllocate:1];
-    
+
     self->data[self->len] = value;
     self->len++;
 }
@@ -915,12 +915,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
                at:(uintptr_t)index
 {
     [self dataAllocate:1];
-    
+
     if (self->len != index)
     {
         memmove(self->data + index + 1, self->data + index, sizeof(int32_t));
     }
-    
+
     self->data[index] = value;
     self->len++;
 }
@@ -929,12 +929,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
              len:(uintptr_t)l
 {
     [self dataAllocate:l];
-    
+
     if (!d || !l)
     {
         return;
     }
-    
+
     memcpy(self->data + self->len, d, l * sizeof(int32_t));
     self->len += l;
 }
@@ -944,17 +944,17 @@ __IMPL_TEST(isLongArray, NBTLongArray)
                 at:(uintptr_t)index
 {
     [self dataAllocate:l];
-    
+
     if (!d || !l)
     {
         return;
     }
-    
+
     if (self->len != index)
     {
         memmove(self->data + index + l, self->data + index, l * sizeof(int32_t));
     }
-    
+
     memcpy(self->data + index, d, l * sizeof(int32_t));
     self->len += l;
 }
@@ -992,7 +992,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
         self->len = l;
         return self;
     }
-    
+
     int64_t * ptr = calloc(l, sizeof(int64_t));
     if (!ptr)
     {
@@ -1000,7 +1000,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
                                        reason:nil
                                      userInfo:nil];
     }
-    
+
     memcpy(ptr, d, l * sizeof(int64_t));
     self->data = ptr;
     self->len = l;
@@ -1013,7 +1013,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     {
         free(self->data);
     }
-    
+
     [super dealloc];
 }
 
@@ -1059,11 +1059,11 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     {
         return;
     }
-    
+
     if (self->cap == 0 || !self->data)
     {
         self->cap = moreElements;
-        
+
         self->data = calloc(self->cap, sizeof(int64_t));
     }
     else
@@ -1072,10 +1072,10 @@ __IMPL_TEST(isLongArray, NBTLongArray)
         {
             self->cap *= 2;
         }
-        
+
         self->data = realloc(self->data, self->cap * sizeof(int64_t));
     }
-    
+
     if (!self->data)
     {
         @throw [NSException exceptionWithName:NSMallocException
@@ -1091,12 +1091,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     {
         return;
     }
-    
+
     if (self->cap < l)
     {
         [self dataAllocate:l - self->cap];
     }
-    
+
     memcpy(self->data, d, l * sizeof(int64_t));
     self->len = l;
 }
@@ -1104,7 +1104,7 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 - (void)pushOne:(int64_t)value
 {
     [self dataAllocate:1];
-    
+
     self->data[self->len] = value;
     self->len++;
 }
@@ -1113,12 +1113,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
                at:(uintptr_t)index
 {
     [self dataAllocate:1];
-    
+
     if (self->len != index)
     {
         memmove(self->data + index + 1, self->data + index, sizeof(int64_t));
     }
-    
+
     self->data[index] = value;
     self->len++;
 }
@@ -1127,12 +1127,12 @@ __IMPL_TEST(isLongArray, NBTLongArray)
              len:(uintptr_t)l
 {
     [self dataAllocate:l];
-    
+
     if (!d || !l)
     {
         return;
     }
-    
+
     memcpy(self->data + self->len, d, l * sizeof(int64_t));
     self->len += l;
 }
@@ -1142,17 +1142,17 @@ __IMPL_TEST(isLongArray, NBTLongArray)
                 at:(uintptr_t)index
 {
     [self dataAllocate:l];
-    
+
     if (!d || !l)
     {
         return;
     }
-    
+
     if (self->len != index)
     {
         memmove(self->data + index + l, self->data + index, l * sizeof(int64_t));
     }
-    
+
     memcpy(self->data + index, d, l * sizeof(int64_t));
     self->len += l;
 }

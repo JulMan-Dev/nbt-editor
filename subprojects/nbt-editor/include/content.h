@@ -5,7 +5,7 @@
 
 @interface NBTDocument : NSDocument
 
-+ (nonnull instancetype)fromTag:(nonnull NBTBaseTag *)tag
++ (nonnull instancetype)fromTag:(nonnull __weak NBTBaseTag *)tag
                      compressed:(BOOL)compressed;
 
 - (nullable NBTBaseTag *)tag;
