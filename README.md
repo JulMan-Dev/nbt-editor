@@ -13,7 +13,7 @@ linking with `NBTKit`.
 | Layer    | Compression | NBT            | Region        | Notes                              |
 |----------|-------------|----------------|---------------|------------------------------------|
 | `NBTKit` | Read-only   | Read and write | Not supported | Compressed files not yet editable  |
-| GUI      | Read-only   | Read and write | Not supported | Editing not yet wired up in the UI |
+| GUI      | Read-only   | Read-only      | Not supported | Editing not yet wired up in the UI |
 
 Editing is fully supported at the core; only the GUI is currently read-only, viewer-first.
 
