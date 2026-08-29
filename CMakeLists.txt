@@ -7,6 +7,8 @@ project(
         LANGUAGES OBJC
 )
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_library(NBTKit SHARED)
 add_executable(NBTEditor)
 
