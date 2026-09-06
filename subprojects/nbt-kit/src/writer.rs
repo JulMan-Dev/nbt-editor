@@ -54,7 +54,7 @@ impl<T: Write> NbtSerializer<T> {
 }
 
 impl<T: Write> TagWriter for NbtSerializer<T> {
-    fn write_tag(&mut self, value: Tag) {
+    fn write_tag(&mut self, value: Tag) -> Option<()> {
         match value {
             Tag::Empty => {
                 self.inner.write(&[0]);
@@ -108,75 +108,84 @@ impl<T: Write> TagWriter for NbtSerializer<T> {
                 self.write_long_array(array);
             }
         }
+        Some(())
     }
 
-    fn write_compressed_tag(&mut self, value: Tag) {
+    fn write_compressed_tag(&mut self, value: Tag) -> Option<()> {
         todo!();
     }
 }
 
 impl<T: Write> ByteWriter for NbtSerializer<T> {
-    fn write_byte(&mut self, value: i8) {
+    fn write_byte(&mut self, value: i8) -> Option<()> {
         self.inner.write(&[value as u8]);
+        Some(())
     }
 }
 
 impl<T: Write> ShortWriter for NbtSerializer<T> {
-    fn write_short(&mut self, value: i16) {
+    fn write_short(&mut self, value: i16) -> Option<()> {
         self.inner.write_all(&value.to_be_bytes());
+        Some(())
     }
 }
 
 impl<T: Write> IntWriter for NbtSerializer<T> {
-    fn write_int(&mut self, value: i32) {
+    fn write_int(&mut self, value: i32) -> Option<()> {
         self.inner.write_all(&value.to_be_bytes());
+        Some(())
     }
 }
 
 impl<T: Write> LongWriter for NbtSerializer<T> {
-    fn write_long(&mut self, value: i64) {
+    fn write_long(&mut self, value: i64) -> Option<()> {
         self.inner.write_all(&value.to_be_bytes());
+        Some(())
     }
 }
 
 impl<T: Write> FloatWriter for NbtSerializer<T> {
-    fn write_float(&mut self, value: f32) {
+    fn write_float(&mut self, value: f32) -> Option<()> {
         self.inner.write_all(&value.to_be_bytes());
+        Some(())
     }
 }
 
 impl<T: Write> DoubleWriter for NbtSerializer<T> {
-    fn write_double(&mut self, value: f64) {
+    fn write_double(&mut self, value: f64) -> Option<()> {
         self.inner.write_all(&value.to_be_bytes());
+        Some(())
     }
 }
 
 impl<T: Write> ByteArrayWriter for NbtSerializer<T> {
-    fn write_byte_array(&mut self, value: ByteArray) {
+    fn write_byte_array(&mut self, value: ByteArray) -> Option<()> {
         self.inner.write_all(&(value.len() as u32).to_be_bytes());
         // todo: use transmute or similar to write all bytes in one call
         for x in value.into_inner() {
             self.inner.write(&[x as u8]);
         }
+        Some(())
     }
 }
 
 impl<T: Write> StringWriter for NbtSerializer<T> {
-    fn write_string(&mut self, value: String) {
+    fn write_string(&mut self, value: String) -> Option<()> {
         self.inner.write_all(&(value.len() as u16).to_be_bytes());
         self.inner.write_all(&value.as_bytes());
+        Some(())
     }
 }
 
 impl<T: Write> ListWriter for NbtSerializer<T> {
-    fn write_list(&mut self, value: List) {
+    fn write_list(&mut self, value: List) -> Option<()> {
         macro_rules! impl_list {
             (($id:expr, $ty:literal) |$v:ident| $expr:expr) => {{
                 self.inner.write(&[$ty]);
                 self.inner.write_all(&($id.len() as u32).to_be_bytes());
 
                 for $v in $id {
-                    $expr
+                    $expr;
                 }
             }}
         }
@@ -196,11 +205,12 @@ impl<T: Write> ListWriter for NbtSerializer<T> {
             List::IntArray(arrays) => impl_list!((arrays, 11) |a| self.write_int_array(a)),
             List::LongArray(arrays) => impl_list!((arrays, 12) |a| self.write_long_array(a)),
         }
+        Some(())
     }
 }
 
 impl<T: Write> CompoundWriter for NbtSerializer<T> {
-    fn write_compound(&mut self, value: Compound) {
+    fn write_compound(&mut self, value: Compound) -> Option<()> {
         for (k, v) in value.into_inner() {
             let string = {
                 let mut bytes = BinarySerializer::new(Vec::new());
@@ -274,23 +284,26 @@ impl<T: Write> CompoundWriter for NbtSerializer<T> {
                 }
             }
         }
+        Some(())
     }
 }
 
 impl<T: Write> IntArrayWriter for NbtSerializer<T> {
-    fn write_int_array(&mut self, value: IntArray) {
+    fn write_int_array(&mut self, value: IntArray) -> Option<()> {
         self.inner.write_all(&(value.len() as u32).to_be_bytes());
         for i in value.into_inner() {
             self.write_int(i);
         }
+        Some(())
     }
 }
 
 impl<T: Write> LongArrayWriter for NbtSerializer<T> {
-    fn write_long_array(&mut self, value: LongArray) {
+    fn write_long_array(&mut self, value: LongArray) -> Option<()> {
         self.inner.write_all(&(value.len() as u32).to_be_bytes());
         for l in value.into_inner() {
             self.write_long(l);
         }
+        Some(())
     }
 }
