@@ -57,58 +57,57 @@ impl<T: Write> TagWriter for NbtSerializer<T> {
     fn write_tag(&mut self, value: Tag) -> Option<()> {
         match value {
             Tag::Empty => {
-                self.inner.write_all(&[0]).ok()?;
+                self.inner.write_all(&[0]).ok()
             }
             Tag::Byte(byte) => {
                 self.inner.write_all(&[1]).ok()?;
-                self.write_byte(byte)?;
+                self.write_byte(byte)
             }
             Tag::Short(short) => {
                 self.inner.write_all(&[2]).ok()?;
-                self.write_short(short)?;
+                self.write_short(short)
             }
             Tag::Int(int) => {
                 self.inner.write_all(&[3]).ok()?;
-                self.write_int(int)?;
+                self.write_int(int)
             }
             Tag::Long(long) => {
                 self.inner.write_all(&[4]).ok()?;
-                self.write_long(long)?;
+                self.write_long(long)
             }
             Tag::Float(float) => {
                 self.inner.write_all(&[5]).ok()?;
-                self.write_float(float)?;
+                self.write_float(float)
             }
             Tag::Double(double) => {
                 self.inner.write_all(&[6]).ok()?;
-                self.write_double(double)?;
+                self.write_double(double)
             }
             Tag::ByteArray(array) => {
                 self.inner.write_all(&[7]).ok()?;
-                self.write_byte_array(array)?;
+                self.write_byte_array(array)
             }
             Tag::String(str) => {
                 self.inner.write_all(&[8]).ok()?;
-                self.write_string(str)?;
+                self.write_string(str)
             }
             Tag::List(list) => {
                 self.inner.write_all(&[9]).ok()?;
-                self.write_list(list)?;
+                self.write_list(list)
             }
             Tag::Compound(compound) => {
                 self.inner.write_all(&[10]).ok()?;
-                self.write_compound(compound)?;
+                self.write_compound(compound)
             }
             Tag::IntArray(array) => {
                 self.inner.write_all(&[11]).ok()?;
-                self.write_int_array(array)?;
+                self.write_int_array(array)
             }
             Tag::LongArray(array) => {
                 self.inner.write_all(&[12]).ok()?;
-                self.write_long_array(array)?;
+                self.write_long_array(array)
             }
         }
-        Some(())
     }
 
     fn write_compressed_tag(&mut self, value: Tag) -> Option<()> {
@@ -118,43 +117,37 @@ impl<T: Write> TagWriter for NbtSerializer<T> {
 
 impl<T: Write> ByteWriter for NbtSerializer<T> {
     fn write_byte(&mut self, value: i8) -> Option<()> {
-        self.inner.write_all(&[value as u8]).ok()?;
-        Some(())
+        self.inner.write_all(&[value as u8]).ok()
     }
 }
 
 impl<T: Write> ShortWriter for NbtSerializer<T> {
     fn write_short(&mut self, value: i16) -> Option<()> {
-        self.inner.write_all(&value.to_be_bytes()).ok()?;
-        Some(())
+        self.inner.write_all(&value.to_be_bytes()).ok()
     }
 }
 
 impl<T: Write> IntWriter for NbtSerializer<T> {
     fn write_int(&mut self, value: i32) -> Option<()> {
-        self.inner.write_all(&value.to_be_bytes()).ok()?;
-        Some(())
+        self.inner.write_all(&value.to_be_bytes()).ok()
     }
 }
 
 impl<T: Write> LongWriter for NbtSerializer<T> {
     fn write_long(&mut self, value: i64) -> Option<()> {
-        self.inner.write_all(&value.to_be_bytes()).ok()?;
-        Some(())
+        self.inner.write_all(&value.to_be_bytes()).ok()
     }
 }
 
 impl<T: Write> FloatWriter for NbtSerializer<T> {
     fn write_float(&mut self, value: f32) -> Option<()> {
-        self.inner.write_all(&value.to_be_bytes()).ok()?;
-        Some(())
+        self.inner.write_all(&value.to_be_bytes()).ok()
     }
 }
 
 impl<T: Write> DoubleWriter for NbtSerializer<T> {
     fn write_double(&mut self, value: f64) -> Option<()> {
-        self.inner.write_all(&value.to_be_bytes()).ok()?;
-        Some(())
+        self.inner.write_all(&value.to_be_bytes()).ok()
     }
 }
 
@@ -172,8 +165,7 @@ impl<T: Write> ByteArrayWriter for NbtSerializer<T> {
 impl<T: Write> StringWriter for NbtSerializer<T> {
     fn write_string(&mut self, value: String) -> Option<()> {
         self.inner.write_all(&(value.len() as u16).to_be_bytes()).ok()?;
-        self.inner.write_all(&value.as_bytes()).ok()?;
-        Some(())
+        self.inner.write_all(&value.as_bytes()).ok()
     }
 }
 
