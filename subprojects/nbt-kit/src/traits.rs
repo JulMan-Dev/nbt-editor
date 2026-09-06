@@ -106,5 +106,5 @@ pub trait TagProducer {
 pub trait TagWriter {
     fn write_tag(&mut self, value: Tag);
 
-    fn write_compressed_tag(&mut self) -> Option<Tag>;
+    fn write_compressed_tag(&mut self, value: Tag);
 }

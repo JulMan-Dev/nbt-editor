@@ -110,7 +110,7 @@ impl<T: Write> TagWriter for NbtSerializer<T> {
         }
     }
 
-    fn write_compressed_tag(&mut self) -> Option<Tag> {
+    fn write_compressed_tag(&mut self, value: Tag) {
         todo!();
     }
 }
