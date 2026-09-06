@@ -21,7 +21,7 @@ mod tests {
     fn byte() {
         let mut serializer = BinarySerializer::new(vec![]);
         serializer.write_tag(Tag::Byte(20));
-        let source = &**serializer;
+        let source = &***serializer;
 
         let mut parser = BinaryParser::from(source);
         assert_eq!(parser.take_tag(true), Some(Tag::Byte(20)));
