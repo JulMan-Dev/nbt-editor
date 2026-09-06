@@ -1,6 +1,8 @@
 use core::ops::{Deref, DerefMut};
 use std::io::Write;
 use std::mem;
+use flate2::Compression;
+use flate2::write::GzEncoder;
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
 use crate::traits::*;
 
@@ -112,7 +114,8 @@ impl<T: Write> TagWriter for NbtSerializer<T> {
     }
 
     fn write_compressed_tag(&mut self, value: Tag) -> Option<()> {
-        todo!();
+        let mut writer = NbtSerializer::new(GzEncoder::new(&mut self.inner, Compression::default()));
+        writer.write_tag(value)
     }
 }
 
