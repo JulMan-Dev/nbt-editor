@@ -1,6 +1,6 @@
 use core::ops::{Deref, DerefMut};
+use core::mem;
 use std::io::Write;
-use std::mem;
 use flate2::Compression;
 use flate2::write::GzEncoder;
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
