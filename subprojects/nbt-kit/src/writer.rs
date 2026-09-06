@@ -83,6 +83,10 @@ impl TagWriter for BinarySerializer {
             }
         }
     }
+
+    fn write_compressed_tag(&mut self) -> Option<Tag> {
+        todo!();
+    }
 }
 
 impl ByteWriter for BinarySerializer {
