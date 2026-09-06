@@ -208,6 +208,8 @@ impl<T: Write> CompoundWriter for NbtSerializer<T> {
                 bytes.inner
             };
 
+            self.inner.write_all(&(string.len() as u16).to_be_bytes());
+
             match v {
                 Tag::Empty => unreachable!(),
                 Tag::Byte(b) => {
