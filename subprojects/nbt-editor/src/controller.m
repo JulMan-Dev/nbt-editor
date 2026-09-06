@@ -46,6 +46,53 @@
 
 @end
 
+@interface NBTTreeView : NSOutlineView
+@end
+
+@implementation NBTTreeView
+
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+        NSPoint point = [self convertPoint:[event locationInWindow]
+                                  fromView:nil];
+
+    NSInteger row = [self rowAtPoint:point];
+
+    if (row < 0)
+    {
+        return nil;
+    }
+
+    id item = [self itemAtRow:row];
+
+    // Select the item that was right-clicked
+    [self selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
+      byExtendingSelection:NO];
+
+    NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
+
+    NSMenuItem *rename = [[NSMenuItem alloc] initWithTitle:@"Rename"
+                                                    action:@selector(renameItem:)
+                                             keyEquivalent:@""];
+
+    [rename setTarget:[self delegate]];
+    [rename setRepresentedObject:item];
+
+    [menu addItem:rename];
+
+    NSMenuItem *delete = [[NSMenuItem alloc] initWithTitle:@"Delete"
+                                                    action:@selector(deleteItem:)
+                                             keyEquivalent:@""];
+
+    [delete setTarget:[self delegate]];
+    [delete setRepresentedObject:item];
+
+    [menu addItem:delete];
+    return menu;
+}
+
+@end
+
 @implementation NBTWindowController {
     NBTDocument *_document;
     // this is linked to the document but a state of it, it is a view state
@@ -93,7 +140,7 @@
 - (void)initOutlineView
 {
     NSWindow *window = [self window];
-    NSOutlineView *mainView = [[NSOutlineView alloc] initWithFrame:[window frame]];
+    NSOutlineView *mainView = [[NBTTreeView alloc] initWithFrame:[window frame]];
     [mainView setHeaderView:nil];
 
     NSTableColumn *mainCol = [[NSTableColumn alloc] initWithIdentifier:@"NBTKey"];

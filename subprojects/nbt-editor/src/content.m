@@ -173,6 +173,12 @@
     }
 }
 
+- (NSMenu *)outlineView:(NSOutlineView *)outlineView
+            menuForItem:(id)item
+{
+
+}
+
 - (NSInteger)outlineView:(NSOutlineView *)outlineView
   numberOfChildrenOfItem:(id)item
 {
