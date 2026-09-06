@@ -5,18 +5,16 @@ use crate::traits::*;
 
 #[derive(Debug, Clone)]
 pub struct BinarySerializer {
-    inner: Vec<u8>,
+    inner: NbtSerializer<Vec<u8>>,
 }
 
-// TODO: implement all traits on NbtSerializer instead of BinarySerializer, making BinarySerializer somehow derefs to
-//       NbtSerializer.
 #[derive(Debug, Clone)]
 pub struct NbtSerializer<T: Write> {
     inner: T,
 }
 
 impl Deref for BinarySerializer {
-    type Target = Vec<u8>;
+    type Target = NbtSerializer<Vec<u8>>;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
@@ -31,11 +29,33 @@ impl DerefMut for BinarySerializer {
 
 impl BinarySerializer {
     pub const fn new(inner: Vec<u8>) -> Self {
+        Self { inner: NbtSerializer::new(inner) }
+    }
+}
+
+impl<T: Write> Deref for NbtSerializer<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl<T: Write> DerefMut for NbtSerializer<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+impl<T: Write> NbtSerializer<T> {
+    pub const fn new(inner: T) -> Self {
         Self { inner }
     }
 }
 
-impl TagWriter for BinarySerializer {
+// TODO: use Write trait and not Vec<_>
+
+impl<T: Write> TagWriter for NbtSerializer<T> {
     fn write_tag(&mut self, value: Tag) {
         match value {
             Tag::Empty => {
@@ -97,57 +117,57 @@ impl TagWriter for BinarySerializer {
     }
 }
 
-impl ByteWriter for BinarySerializer {
+impl<T: Write> ByteWriter for NbtSerializer<T> {
     fn write_byte(&mut self, value: i8) {
         self.inner.push(value as u8);
     }
 }
 
-impl ShortWriter for BinarySerializer {
+impl<T: Write> ShortWriter for NbtSerializer<T> {
     fn write_short(&mut self, value: i16) {
         self.inner.extend(value.to_be_bytes());
     }
 }
 
-impl IntWriter for BinarySerializer {
+impl<T: Write> IntWriter for NbtSerializer<T> {
     fn write_int(&mut self, value: i32) {
         self.inner.extend(value.to_be_bytes());
     }
 }
 
-impl LongWriter for BinarySerializer {
+impl<T: Write> LongWriter for NbtSerializer<T> {
     fn write_long(&mut self, value: i64) {
         self.inner.extend(value.to_be_bytes());
     }
 }
 
-impl FloatWriter for BinarySerializer {
+impl<T: Write> FloatWriter for NbtSerializer<T> {
     fn write_float(&mut self, value: f32) {
         self.inner.extend(value.to_be_bytes());
     }
 }
 
-impl DoubleWriter for BinarySerializer {
+impl<T: Write> DoubleWriter for NbtSerializer<T> {
     fn write_double(&mut self, value: f64) {
         self.inner.extend(value.to_be_bytes());
     }
 }
 
-impl ByteArrayWriter for BinarySerializer {
+impl<T: Write> ByteArrayWriter for NbtSerializer<T> {
     fn write_byte_array(&mut self, value: ByteArray) {
         self.inner.extend((value.len() as u32).to_be_bytes());
         self.inner.extend(value.into_inner().into_iter().map(|x| x as u8));
     }
 }
 
-impl StringWriter for BinarySerializer {
+impl<T: Write> StringWriter for NbtSerializer<T> {
     fn write_string(&mut self, value: String) {
         self.inner.extend((value.len() as u16).to_be_bytes());
         self.inner.extend(value.as_bytes());
     }
 }
 
-impl ListWriter for BinarySerializer {
+impl<T: Write> ListWriter for NbtSerializer<T> {
     fn write_list(&mut self, value: List) {
         macro_rules! impl_list {
             (($id:expr, $ty:literal) |$v:ident| $expr:expr) => {{
@@ -178,7 +198,7 @@ impl ListWriter for BinarySerializer {
     }
 }
 
-impl CompoundWriter for BinarySerializer {
+impl<T: Write> CompoundWriter for NbtSerializer<T> {
     fn write_compound(&mut self, value: Compound) {
         for (k, v) in value.into_inner() {
             let string = {
@@ -254,7 +274,7 @@ impl CompoundWriter for BinarySerializer {
     }
 }
 
-impl IntArrayWriter for BinarySerializer {
+impl<T: Write> IntArrayWriter for NbtSerializer<T> {
     fn write_int_array(&mut self, value: IntArray) {
         self.inner.extend((value.len() as u32).to_be_bytes());
         for i in value.into_inner() {
@@ -263,7 +283,7 @@ impl IntArrayWriter for BinarySerializer {
     }
 }
 
-impl LongArrayWriter for BinarySerializer {
+impl<T: Write> LongArrayWriter for NbtSerializer<T> {
     fn write_long_array(&mut self, value: LongArray) {
         self.inner.extend((value.len() as u32).to_be_bytes());
         for l in value.into_inner() {
