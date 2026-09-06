@@ -6,7 +6,7 @@ pub trait ByteProducer {
 }
 
 pub trait ByteWriter {
-    fn write_byte(&mut self, value: i8);
+    fn write_byte(&mut self, value: i8) -> Option<()>;
 }
 
 pub trait ShortProducer {
@@ -14,7 +14,7 @@ pub trait ShortProducer {
 }
 
 pub trait ShortWriter {
-    fn write_short(&mut self, value: i16);
+    fn write_short(&mut self, value: i16) -> Option<()>;
 }
 
 pub trait IntProducer {
@@ -22,7 +22,7 @@ pub trait IntProducer {
 }
 
 pub trait IntWriter {
-    fn write_int(&mut self, value: i32);
+    fn write_int(&mut self, value: i32) -> Option<()>;
 }
 
 pub trait LongProducer {
@@ -30,7 +30,7 @@ pub trait LongProducer {
 }
 
 pub trait LongWriter {
-    fn write_long(&mut self, value: i64);
+    fn write_long(&mut self, value: i64) -> Option<()>;
 }
 
 pub trait FloatProducer {
@@ -38,7 +38,7 @@ pub trait FloatProducer {
 }
 
 pub trait FloatWriter {
-    fn write_float(&mut self, value: f32);
+    fn write_float(&mut self, value: f32) -> Option<()>;
 }
 
 pub trait DoubleProducer {
@@ -46,7 +46,7 @@ pub trait DoubleProducer {
 }
 
 pub trait DoubleWriter {
-    fn write_double(&mut self, value: f64);
+    fn write_double(&mut self, value: f64) -> Option<()>;
 }
 
 pub trait ByteArrayProducer {
@@ -54,7 +54,7 @@ pub trait ByteArrayProducer {
 }
 
 pub trait ByteArrayWriter {
-    fn write_byte_array(&mut self, value: ByteArray);
+    fn write_byte_array(&mut self, value: ByteArray) -> Option<()>;
 }
 
 pub trait StringProducer {
@@ -62,7 +62,7 @@ pub trait StringProducer {
 }
 
 pub trait StringWriter {
-    fn write_string(&mut self, value: String);
+    fn write_string(&mut self, value: String) -> Option<()>;
 }
 
 pub trait ListProducer {
@@ -70,7 +70,7 @@ pub trait ListProducer {
 }
 
 pub trait ListWriter {
-    fn write_list(&mut self, value: List);
+    fn write_list(&mut self, value: List) -> Option<()>;
 }
 
 pub trait CompoundProducer {
@@ -78,7 +78,7 @@ pub trait CompoundProducer {
 }
 
 pub trait CompoundWriter {
-    fn write_compound(&mut self, value: Compound);
+    fn write_compound(&mut self, value: Compound) -> Option<()>;
 }
 
 pub trait IntArrayProducer  {
@@ -86,7 +86,7 @@ pub trait IntArrayProducer  {
 }
 
 pub trait IntArrayWriter {
-    fn write_int_array(&mut self, value: IntArray);
+    fn write_int_array(&mut self, value: IntArray) -> Option<()>;
 }
 
 pub trait LongArrayProducer {
@@ -94,7 +94,7 @@ pub trait LongArrayProducer {
 }
 
 pub trait LongArrayWriter {
-    fn write_long_array(&mut self, value: LongArray);
+    fn write_long_array(&mut self, value: LongArray) -> Option<()>;
 }
 
 pub trait TagProducer {
@@ -104,5 +104,7 @@ pub trait TagProducer {
 }
 
 pub trait TagWriter {
-    fn write_tag(&mut self, value: Tag);
+    fn write_tag(&mut self, value: Tag) -> Option<()>;
+
+    fn write_compressed_tag(&mut self, value: Tag) -> Option<()>;
 }
