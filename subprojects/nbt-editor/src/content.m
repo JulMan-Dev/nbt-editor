@@ -74,13 +74,13 @@
 
     if ((tag = [parser takeTag:YES]))
     {
-        self->_tag = tag;
+        self->_tag = [tag mutableCopy];
         self->_compressed = NO;
         return YES;
     }
     else if ((tag = [parser takeCompressedTag:YES]))
     {
-        self->_tag = tag;
+        self->_tag = [tag mutableCopy];
         self->_compressed = YES;
         return YES;
     }
