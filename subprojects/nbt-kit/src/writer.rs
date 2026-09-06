@@ -1,10 +1,17 @@
 use core::ops::{Deref, DerefMut};
+use std::io::Write;
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
 use crate::traits::*;
 
 #[derive(Debug, Clone)]
 pub struct BinarySerializer {
     inner: Vec<u8>,
+}
+
+// TODO: implement all traits on NbtSerializer instead of BinarySerializer, making BinarySerializer somehow derefs to
+//       NbtSerializer.
+pub struct NbtSerializer<T: Write> {
+    inner: T,
 }
 
 impl Deref for BinarySerializer {
