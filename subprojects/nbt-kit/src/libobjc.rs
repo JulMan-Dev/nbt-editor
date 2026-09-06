@@ -505,6 +505,14 @@ unsafe fn load_objc_classes() {
             $write_expr;
             let _: () = unsafe { msg_send![Retained::as_ptr(&mutable_data), appendBytes:$serializer.as_ptr(), length:$serializer.len()] };
         }};
+        ($this:expr => + |$serializer:ident| $write_expr:expr) => {{
+            let this = $this;
+            let mutable_data: Retained<NSMutableData> = unsafe { msg_send![this, mutableData] };
+            let mut $serializer = BinarySerializer::new(Vec::new());
+            let ret = $write_expr;
+            let _: () = unsafe { msg_send![Retained::as_ptr(&mutable_data), appendBytes:$serializer.as_ptr(), length:$serializer.len()] };
+            ret
+        }};
     }
 
     macro_rules! objc_binding {
@@ -540,7 +548,7 @@ unsafe fn load_objc_classes() {
     }
 
     let encoding = c"@@:B".as_ptr();
-    let write_encoding = c"v@:@".as_ptr();
+    let write_encoding = c"B@:@".as_ptr();
 
     objc_binding! {
         (takeByte:), encoding, |this: *mut AnyObject, _cmd: Sel, root: bool| -> Option<Retained<AnyObject>> {
@@ -604,56 +612,60 @@ unsafe fn load_objc_classes() {
             impl_binding!(this => |mut parser| Some(objc_tag(parser.take_compressed_tag(root)?)))
         }
 
-        (writeByte:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_byte(unsafe { rust_byte(value) }));
+        (writeByte:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_byte(unsafe { rust_byte(value) }).is_some())
         }
 
-        (writeShort:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_short(unsafe { rust_short(value) }));
+        (writeShort:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_short(unsafe { rust_short(value) }).is_some())
         }
 
-        (writeInt:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_int(unsafe { rust_int(value) }));
+        (writeInt:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_int(unsafe { rust_int(value) }).is_some())
         }
 
-        (writeLong:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_long(unsafe { rust_long(value) }));
+        (writeLong:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_long(unsafe { rust_long(value) }).is_some())
         }
 
-        (writeFloat:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_float(unsafe { rust_float(value) }));
+        (writeFloat:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_float(unsafe { rust_float(value) }).is_some())
         }
 
-        (writeDouble:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_double(unsafe { rust_double(value) }));
+        (writeDouble:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_double(unsafe { rust_double(value) }).is_some())
         }
 
-        (writeByteArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_byte_array(unsafe { rust_byte_array(value) }));
+        (writeByteArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_byte_array(unsafe { rust_byte_array(value) }).is_some())
         }
 
-        (writeString:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_string(unsafe { rust_string(value) }));
+        (writeString:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_string(unsafe { rust_string(value) }).is_some())
         }
 
-        (writeList:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_list(unsafe { rust_list(value) }));
+        (writeList:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_list(unsafe { rust_list(value) }).is_some())
         }
 
-        (writeCompound:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_compound(unsafe { rust_compound(value) }));
+        (writeCompound:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_compound(unsafe { rust_compound(value) }).is_some())
         }
 
-        (writeIntArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_int_array(unsafe { rust_int_array(value) }));
+        (writeIntArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_int_array(unsafe { rust_int_array(value) }).is_some())
         }
 
-        (writeLongArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_long_array(unsafe { rust_long_array(value) }));
+        (writeLongArray:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_long_array(unsafe { rust_long_array(value) }).is_some())
         }
 
-        (writeTag:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| {
-            impl_write!(this => |serializer| serializer.write_tag(unsafe { rust_tag(value) }));
+        (writeTag:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_tag(unsafe { rust_tag(value) }).is_some())
+        }
+
+        (writeCompressedTag:), write_encoding, |this: *mut AnyObject, _cmd: Sel, value: *mut AnyObject| -> bool {
+            impl_write!(this => + |serializer| serializer.write_compressed_tag(unsafe { rust_tag(value) }).is_some())
         }
     }
 }

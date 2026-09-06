@@ -46,19 +46,20 @@
 - (nonnull instancetype)initWithMutable:(nonnull NSMutableData *)data;
 - (nonnull NSData *)data;
 - (nonnull NSMutableData *)mutableData;
-- (void)writeByte:(nonnull NBTByte *)value;
-- (void)writeShort:(nonnull NBTShort *)value;
-- (void)writeInt:(nonnull NBTInt *)value;
-- (void)writeLong:(nonnull NBTLong *)value;
-- (void)writeFloat:(nonnull NBTFloat *)value;
-- (void)writeDouble:(nonnull NBTDouble *)value;
-- (void)writeByteArray:(nonnull NBTByteArray *)value;
-- (void)writeString:(nonnull NBTString *)value;
-- (void)writeList:(nonnull NBTList *)value;
-- (void)writeCompound:(nonnull NBTCompound *)value;
-- (void)writeIntArray:(nonnull NBTIntArray *)value;
-- (void)writeLongArray:(nonnull NBTLongArray *)value;
-- (void)writeTag:(nonnull NBTBaseTag *)value;
+- (BOOL)writeByte:(nonnull NBTByte *)value;
+- (BOOL)writeShort:(nonnull NBTShort *)value;
+- (BOOL)writeInt:(nonnull NBTInt *)value;
+- (BOOL)writeLong:(nonnull NBTLong *)value;
+- (BOOL)writeFloat:(nonnull NBTFloat *)value;
+- (BOOL)writeDouble:(nonnull NBTDouble *)value;
+- (BOOL)writeByteArray:(nonnull NBTByteArray *)value;
+- (BOOL)writeString:(nonnull NBTString *)value;
+- (BOOL)writeList:(nonnull NBTList *)value;
+- (BOOL)writeCompound:(nonnull NBTCompound *)value;
+- (BOOL)writeIntArray:(nonnull NBTIntArray *)value;
+- (BOOL)writeLongArray:(nonnull NBTLongArray *)value;
+- (BOOL)writeTag:(nonnull NBTBaseTag *)value;
+- (BOOL)writeCompressedTag:(nonnull NBTBaseTag *)value;
 
 @end
 
