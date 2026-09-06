@@ -10,6 +10,7 @@ pub struct BinarySerializer {
 
 // TODO: implement all traits on NbtSerializer instead of BinarySerializer, making BinarySerializer somehow derefs to
 //       NbtSerializer.
+#[derive(Debug, Clone)]
 pub struct NbtSerializer<T: Write> {
     inner: T,
 }
