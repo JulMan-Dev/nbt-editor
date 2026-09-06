@@ -62,7 +62,7 @@
 
 - (instancetype)initWithMutable:(NSMutableData *)d
 {
-    self->data = [d mutableCopy];
+    self->data = d;
     return self;
 }
 
