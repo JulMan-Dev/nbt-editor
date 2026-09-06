@@ -1,5 +1,6 @@
 use core::ops::{Deref, DerefMut};
 use std::io::Write;
+use std::mem;
 use crate::kind::{ByteArray, Compound, IntArray, List, LongArray, Tag};
 use crate::traits::*;
 
@@ -154,11 +155,11 @@ impl<T: Write> DoubleWriter for NbtSerializer<T> {
 impl<T: Write> ByteArrayWriter for NbtSerializer<T> {
     fn write_byte_array(&mut self, value: ByteArray) -> Option<()> {
         self.inner.write_all(&(value.len() as u32).to_be_bytes()).ok()?;
-        // todo: use transmute or similar to write all bytes in one call
-        for x in value.into_inner() {
-            self.inner.write(&[x as u8]).ok()?;
-        }
-        Some(())
+
+        let bytes: Box<[i8]> = value.into_inner();
+        // SAFETY: i8 and u8 are the same
+        let bytes: Box<[u8]> = unsafe { mem::transmute(bytes) };
+        self.inner.write_all(&bytes).ok()
     }
 }
 
