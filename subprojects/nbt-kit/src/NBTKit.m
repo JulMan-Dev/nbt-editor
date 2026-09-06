@@ -448,19 +448,24 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     }
     else
     {
-        return [NBTByteArray newWith:[self->data copy]];
+        return [NBTByteArray newWith:[[self data] copy]];
     }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
-    return [NBTModifiableByteArray newWith:[self->data mutableCopy]];
+    return [NBTModifiableByteArray newWith:[[self data] mutableCopy]];
 }
 
 @end
 
 @implementation NBTModifiableByteArray {
     NSMutableData * _Nonnull data;
+}
+
++ (instancetype)newWith:(NSData *)value
+{
+    return [[self alloc] initWith:value];
 }
 
 - (instancetype)initWith:(NSData *)value
@@ -473,6 +478,11 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 {
     [self->data release];
     [super dealloc];
+}
+
+- (nonnull NSData *)data
+{
+    return self->data;
 }
 
 - (void)setData:(NSData *)value
@@ -521,19 +531,24 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     }
     else
     {
-        return [NBTString newWith:[self->data copy]];
+        return [NBTString newWith:[[self value] copy]];
     }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
-    return [NBTModifiableString newWith:self->data];
+    return [NBTModifiableString newWith:[self value]];
 }
 
 @end
 
 @implementation NBTModifiableString {
     NSMutableString * _Nonnull data;
+}
+
++ (instancetype)newWith:(NSString *)value
+{
+    return [[self alloc] initWith:value];
 }
 
 - (instancetype)initWith:(NSString *)value
@@ -546,6 +561,11 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 {
     [self->data release];
     [super dealloc];
+}
+
+- (NSString *)value
+{
+    return self->data;
 }
 
 - (void)setValue:(NSString *)value
@@ -567,8 +587,6 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 
 + (instancetype)newWith:(NSArray<NBTBaseTag *> *)value
 {
-    // we are not doing the copy here because Mutable variant would copy,
-    // copying twice, ineffient.
     return [[self alloc] initWith:value];
 }
 
@@ -639,20 +657,25 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     }
     else
     {
-        return [NBTList newWith:[[NSArray init] initWithArray:self->data
+        return [NBTList newWith:[[NSArray init] initWithArray:[self value]
                                                     copyItems:YES]];
     }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
-    return [NBTModifiableList newWith:[self->data retain]];
+    return [NBTModifiableList newWith:[[self value] retain]];
 }
 
 @end
 
 @implementation NBTModifiableList {
     NSMutableArray<NBTBaseTag *> * _Nonnull data;
+}
+
++ (instancetype)newWith:(NSArray<NBTBaseTag *> *)value
+{
+    return [[self alloc] initWith:value];
 }
 
 - (instancetype)initWith:(NSArray<NBTBaseTag *> *)value
@@ -677,6 +700,11 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 {
     [self->data release];
     [super dealloc];
+}
+
+- (NSArray<NBTBaseTag *> *)value
+{
+    return self->data;
 }
 
 - (void)setValue:(NSArray<NBTBaseTag *> *)value
@@ -725,20 +753,25 @@ __IMPL_TEST(isLongArray, NBTLongArray)
     }
     else
     {
-        return [NBTCompound newWith:[[NSDictionary alloc] initWithDictionary:self->data
+        return [NBTCompound newWith:[[NSDictionary alloc] initWithDictionary:[self value]
                                                                    copyItems:YES]];
     }
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
-    return [NBTModifiableCompound newWith:[self->data retain]];
+    return [NBTModifiableCompound newWith:[[self value] retain]];
 }
 
 @end
 
 @implementation NBTModifiableCompound {
     NSMutableDictionary<NSString *, NBTBaseTag *> * _Nonnull data;
+}
+
++ (instancetype)newWith:(NSDictionary<NSString *, NBTBaseTag *> *)value
+{
+    return [[self alloc] initWith:value];
 }
 
 - (instancetype)initWith:(NSDictionary<NSString *, NBTBaseTag *> *)value
@@ -759,6 +792,11 @@ __IMPL_TEST(isLongArray, NBTLongArray)
 {
     [self->data release];
     [super dealloc];
+}
+
+- (NSDictionary<NSString *,NBTBaseTag *> *)value
+{
+    return self->data;
 }
 
 - (void)setValue:(NSDictionary<NSString *, NBTBaseTag *> *)value
